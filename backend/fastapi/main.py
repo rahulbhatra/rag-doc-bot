@@ -1,7 +1,8 @@
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
-from retrieval import retrieve_top_k
-from llm import ask_ollama
+from backend.ingestion.retrival import load_file_text, chunk_text
+from backend.ingestion.retrival import retrieve_top_k
+from backend.llm.llm import ask_ollama
 
 app = FastAPI()
 
