@@ -26,3 +26,4 @@ aiofiles==23.2.1sentence-transformers==5.0.0
 chromadb==0.4.24
 
 urllib3==1.26.20
+posthog==4.8.0
