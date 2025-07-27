@@ -1,6 +1,7 @@
 from pathlib import Path
 from typing import List
 from PyPDF2 import PdfReader
+import chromadb
 
 def load_file_text(path: str) -> str:
     ext = Path(path).suffix.lower()

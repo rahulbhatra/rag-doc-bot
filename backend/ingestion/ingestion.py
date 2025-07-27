@@ -5,7 +5,6 @@ from PyPDF2 import PdfReader
 from retrival import load_file_text, chunk_text
 from sentence_transformers import SentenceTransformer
 import chromadb
-from chromadb.config import Settings
 
 def embed_chunks(chunks: List[str], model_name: str = "all-MiniLM-L6-v2") -> List[List[float]]:
     model = SentenceTransformer(model_name)
@@ -27,7 +26,6 @@ def store_in_chroma(chunks: List[str], embeddings: List[List[float]], doc_id: st
         ids=ids
     )
 
-    client.persist()
     print(f"✅ Stored {len(chunks)} chunks for {doc_id}")
 
 if __name__ == "__main__":
