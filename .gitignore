@@ -1,0 +1,48 @@
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+*.egg-info/
+.env
+.venv/
+venv/
+*.sqlite3
+*.log
+
+# VSCode
+.vscode/
+
+# Model files and large data
+*.bin
+*.pt
+*.ckpt
+
+# Jupyter Notebooks (optional)
+.ipynb_checkpoints/
+
+# Local Chroma or embedding artifacts
+chroma_db/
+cache/
+tmp/
+*.parquet
+
+# Ollama (optional - models are system-wide, not per-project)
+# /Users/YOUR_USER/.ollama/
+
+# Docker
+*.pid
+*.tar
+*.img
+*.bak
+docker-compose.override.yml
+
+# Node (if using React frontend)
+node_modules/
+build/
+dist/
+
+# Mac system files
+.DS_Store

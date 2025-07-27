@@ -1,0 +1,18 @@
+services:
+  backend:
+    build:
+      context: ./backend
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app
+    depends_on:
+      - chroma
+
+  chroma:
+    image: chromadb/chroma
+    ports:
+      - "8001:8000"
+
+# Optional: Ollama is expected to run locally outside of Docker for now.
+# It uses GPU / Metal on host MacOS, which is tricky to containerize.
