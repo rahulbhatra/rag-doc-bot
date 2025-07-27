@@ -2,33 +2,39 @@ import os
 from pathlib import Path
 from typing import List
 from PyPDF2 import PdfReader
+from retrival import load_file_text, chunk_text
+from sentence_transformers import SentenceTransformer
+import chromadb
+from chromadb.config import Settings
 
-def load_file_text(path: str) -> str:
-    ext = Path(path).suffix.lower()
-    if ext in [".txt", ".md"]:
-        with open(path, "r", encoding="utf-8") as f:
-            return f.read()
-    elif ext == ".pdf":
-        reader = PdfReader(path)
-        text = ""
-        for page in reader.pages:
-            text += page.extract_text() or ""
-        return text
-    else:
-        raise ValueError(f"Unsupported file type: {ext}")
+def embed_chunks(chunks: List[str], model_name: str = "all-MiniLM-L6-v2") -> List[List[float]]:
+    model = SentenceTransformer(model_name)
+    return model.encode(chunks, show_progress_bar=True).tolist()
 
-def chunk_text(text: str, chunk_size: int = 500, overlap: int = 50) -> List[str]:
-    chunks = []
-    start = 0
-    while start < len(text):
-        end = start + chunk_size
-        chunks.append(text[start:end])
-        start += chunk_size - overlap
-    return chunks
+def store_in_chroma(chunks: List[str], embeddings: List[List[float]], doc_id: str):
+    client = chromadb.PersistentClient(path="chroma_db")
+    # client = chromadb.Client(Settings(chroma_db_impl="duckdb+parquet", persist_directory="chroma_db"))
+    collection = client.get_or_create_collection(name="docs")
+
+    documents = chunks
+    metadatas = [{"doc_id": doc_id, "chunk_index": i} for i in range(len(chunks))]
+    ids = [f"{doc_id}_{i}" for i in range(len(chunks))]
+
+    collection.add(
+        documents=documents,
+        embeddings=embeddings,
+        metadatas=metadatas,
+        ids=ids
+    )
+
+    client.persist()
+    print(f"✅ Stored {len(chunks)} chunks for {doc_id}")
 
 if __name__ == "__main__":
-    file_path = "sample.md"  # Replace with your actual file path
+    file_path = "sample.md"  # replace with your actual file
+    doc_id = Path(file_path).stem
+
     full_text = load_file_text(file_path)
     chunks = chunk_text(full_text)
-    for i, chunk in enumerate(chunks[:5]):
-        print(f"Chunk {i+1}:\n{chunk}\n")
+    embeddings = embed_chunks(chunks)
+    store_in_chroma(chunks, embeddings, doc_id)
