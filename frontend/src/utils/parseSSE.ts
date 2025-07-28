@@ -3,14 +3,23 @@ export async function* parseSSE(response: Response): AsyncGenerator<string> {
   if (!reader) return;
   const decoder = new TextDecoder("utf-8");
   let buffer = "";
+
   while (true) {
     const { value, done } = await reader.read();
     if (done) break;
     buffer += decoder.decode(value, { stream: true });
-    const parts = buffer.split("\n\n");
-    buffer = parts.pop() ?? "";
-    for (const part of parts) {
-      if (part.startsWith("data:")) yield part.replace(/^data:\s*/, "");
+    const segments = buffer.split("\n\n");
+    buffer = segments.pop() ?? "";
+
+    for (const seg of segments) {
+      if (seg.startsWith("data:")) {
+        yield seg.substring(5);
+      }
     }
+  }
+
+  // flush remainder if valid
+  if (buffer.startsWith("data:")) {
+    yield buffer.substring(5);
   }
 }

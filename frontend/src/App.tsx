@@ -31,6 +31,7 @@ const App: React.FC = () => {
 
     // Stream in content
     for await (const chunk of parseSSE(res)) {
+      console.log("Chunks gotten", chunk);
       assistantMsg.text += chunk;
       setMessages((prev) => [...prev.slice(0, -1), assistantMsg]);
     }

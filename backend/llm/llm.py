@@ -8,19 +8,24 @@ def ask_ollama(prompt: str, model: str = "mistral") -> str:
     url = f"{OLLAMA_URL}/api/chat"
     payload = {
         "model": model,
+        "stream": True,
         "messages": [{"role": "user", "content": prompt}]
     }
 
     response = requests.post(url, json=payload)
     response.raise_for_status()
 
-    # Handle streamed JSON chunks
-    for line in response.text.strip().splitlines():
+    full_content = ""
+    for line in response.iter_lines(decode_unicode=True):
+        if not line:
+            continue
         try:
             data = json.loads(line)
-            if "message" in data:
-                return data["message"]["content"]
+            msg = data.get("message", {})
+            content = msg.get("content")
+            if content:
+                full_content += content
         except json.JSONDecodeError:
             continue
 
-    return "No response from Ollama"
+    return full_content or "No response from Ollama"
