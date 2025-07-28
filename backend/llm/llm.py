@@ -1,8 +1,11 @@
 import requests
 import json
 
+import os
+OLLAMA_URL = os.getenv("OLLAMA_URL", "http://localhost:11434")
+
 def ask_ollama(prompt: str, model: str = "mistral") -> str:
-    url = "http://localhost:11434/api/chat"
+    url = f"{OLLAMA_URL}/api/chat"
     payload = {
         "model": model,
         "messages": [{"role": "user", "content": prompt}]

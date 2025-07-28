@@ -1,6 +1,6 @@
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
-from backend.ingestion.retrival import load_file_text, chunk_text
+from backend.ingestion.retrival import load_file_text, chunk_text, retrieve_top_k
 from backend.ingestion.retrival import retrieve_top_k
 from backend.llm.llm import ask_ollama
 
@@ -16,23 +16,20 @@ class QueryResponse(BaseModel):
 
 @app.post("/query", response_model=QueryResponse)
 async def query_endpoint(req: QueryRequest):
-    hits = retrieve_top_k(req.question, top_k=req.top_k)
-    if not hits:
-        raise HTTPException(status_code=404, detail="No relevant chunks found")
+    question = req.question
 
-    # Format retrieved context for prompt
-    context = "\n\n".join([doc for doc, _, _ in hits])
+    # Step 1: Retrieve relevant context chunks
+    docs = retrieve_top_k(question, top_k=3)
+    context = "\n".join([doc["content"] for doc in docs])
 
-    # Ask Ollama using retrieved context + question
-    prompt = (
-        f"Use the following extracted document chunks to answer the question.\n\n"
-        f"Context:\n{context}\n\nQuestion: {req.question}"
-    )
+    # Step 2: Build prompt
+    prompt = f"Context:\n{context}\n\nQuestion: {question}\nAnswer:"
+
+    # Step 3: Ask Ollama
     answer = ask_ollama(prompt)
 
-    chunks_info = [
-        {"text": doc, "meta": meta, "distance": dist}
-        for doc, meta, dist in hits
-    ]
-
-    return QueryResponse(answer=answer, chunks=chunks_info)
+    return {
+        "question": question,
+        "answer": answer,
+        "context": context,
+    }
