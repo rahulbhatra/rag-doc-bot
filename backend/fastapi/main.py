@@ -1,3 +1,4 @@
+from typing import List, Optional
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from backend.ingestion.retrival import load_file_text, chunk_text, retrieve_top_k
@@ -12,7 +13,7 @@ class QueryRequest(BaseModel):
 
 class QueryResponse(BaseModel):
     answer: str
-    chunks: list[dict]  # includes text, metadata, distance
+    chunks: Optional[List[dict]] = None  # includes text, metadata, distance
 
 @app.post("/query", response_model=QueryResponse)
 async def query_endpoint(req: QueryRequest):
