@@ -22,3 +22,6 @@ Built with:
 
 ### Run Docker Compose
 docker-compose up --build
+
+### Run Frontend
+npm run dev
