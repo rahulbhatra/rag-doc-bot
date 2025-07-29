@@ -7,6 +7,8 @@ from backend.llm.llm import ask_ollama
 from fastapi import UploadFile, File
 import os
 import shutil
+from fastapi.responses import StreamingResponse
+import json
 
 app = FastAPI()
 
@@ -30,13 +32,11 @@ async def query_endpoint(req: QueryRequest):
     prompt = f"Context:\n{context}\n\nQuestion: {question}\nAnswer:"
 
     # Step 3: Ask Ollama
-    answer = ask_ollama(prompt)
+    def stream():
+        for chunk in ask_ollama(prompt):  # This must be a generator
+            yield f"data: {json.dumps(chunk)}\n\n"
 
-    return {
-        "question": question,
-        "answer": answer,
-        "context": context,
-    }
+    return StreamingResponse(stream(), media_type="text/event-stream")
 
 UPLOAD_DIR = "uploaded_docs"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
