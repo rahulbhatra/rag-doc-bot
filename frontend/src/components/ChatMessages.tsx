@@ -13,11 +13,6 @@ interface Message { role: 'user' | 'assistant'; text: string; }
 
 const ChatMessages: React.FC<ChatMessagesProps> = ({ messages, isLoading }) => (
   <div className="...">
-    {isLoading && (
-      <div className="self-start p-3 bg-gray-100 text-gray-600 rounded-xl animate-pulse">
-        Typing...
-      </div>
-    )}
     {messages.map((message, idx) => (
       <div
           key={idx}
@@ -30,6 +25,11 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({ messages, isLoading }) => (
         { message.text }
       </div>
     ))}
+    {isLoading && (
+      <div className="self-start p-3 bg-gray-100 text-gray-600 rounded-xl animate-pulse">
+        Typing...
+      </div>
+    )}
   </div>
 );
 
