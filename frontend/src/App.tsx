@@ -27,12 +27,14 @@ const App: React.FC = () => {
   };
 
   return (
-    <div>
+    <div className="flex flex-col min-h-screen">
       <header className="shadow bg-white p-4 text-xl font-bold text-center">
         ⚡ Smart Document Assistant
       </header>
-      <main className="flex-1 container mx-auto p-4">
-        <ChatMessages messages={messages} isLoading={isLoading} />
+      <main className="flex-1 container mx-auto p-4 flex flex-col gap-4">
+        <div className="flex-1 overflow-y-auto">
+          <ChatMessages messages={messages} isLoading={isLoading} />
+        </div>
         <ChatInput onSend={sendMessage} />
         <DocumentManager />  
       </main>
