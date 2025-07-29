@@ -12,16 +12,20 @@ interface Message {
 const App: React.FC = () => {
   const [messages, setMessages] = useState<Message[]>([]);
 
-  const { mutate: sendQuery, isPending: isLoading } = useChatQuery();
+  const { mutate: sendQuery, isPending: isLoading } = useChatQuery((chunk) => {
+    setMessages((prev) => {
+      const last = prev[prev.length - 1];
+      const updated = { ...last, text: last.text + chunk };
+      return [...prev.slice(0, -1), updated];
+    });
+  });
 
   const sendMessage = (question: string) => {
-    setMessages((prev) => [...prev, { role: "user", text: question }]);
+    setMessages((prev) => [...prev, { role: "user", text: question }, { role: "assistant", text: "" }]);
+
     sendQuery(question, {
-      onSuccess: (answer) => {
-        setMessages((prev) => [...prev, { role: "assistant", text: answer }]);
-      },
       onError: (err) => {
-        setMessages((prev) => [...prev, { role: "assistant", text: `❌ ${err.message}` }]);
+        setMessages((prev) => [...prev.slice(0, -1), { role: "assistant", text: `❌ ${err.message}` }]);
       },
     });
   };

@@ -1,6 +1,7 @@
+// hooks/useChatQuery.ts
 import { useMutation } from "@tanstack/react-query";
 
-export const useChatQuery = () => {
+export const useChatQuery = (onChunk?: (chunk: string) => void) => {
   return useMutation({
     mutationFn: async (question: string) => {
       const res = await fetch("/query", {
@@ -9,13 +10,36 @@ export const useChatQuery = () => {
         body: JSON.stringify({ question }),
       });
 
-      if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.detail || res.statusText);
+      if (!res.ok || !res.body) {
+        throw new Error("Failed to fetch stream");
       }
 
-      const data = await res.json();
-      return data.answer;
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder("utf-8");
+      let buffer = "";
+
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+        const parts = buffer.split("\n\n");
+        buffer = parts.pop() ?? "";
+
+        for (const part of parts) {
+          if (part.startsWith("data:")) {
+            const jsonStr = part.replace(/^data:\s*/, "");
+            try {
+              const data = JSON.parse(jsonStr);
+              onChunk?.(data.answer ?? "");
+            } catch {
+              onChunk?.(jsonStr); // fallback plain text
+            }
+          }
+        }
+      }
+
+      return true;
     },
   });
 };
