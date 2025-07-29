@@ -16,7 +16,7 @@ const ChatInput: React.FC<ChatInputProps> = ({ onSend }) => {
     <form onSubmit={handleSubmit} className="flex p-2 border-t gap-2">
       <input
         className="flex-grow border rounded px-2 py-1"
-        placeholder="Ask a question..."
+        placeholder="Ask anything"
         value={text}
         onChange={(e) => setText(e.target.value)}
       />
