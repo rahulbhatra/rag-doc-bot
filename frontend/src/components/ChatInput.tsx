@@ -67,7 +67,7 @@ const ChatInput: React.FC<ChatInputProps> = ({ onSend, isLoading }) => {
           Send
         </button>
         {/* Upload Button */}
-        <div className="md:w-auto">
+        <div className="flex items-center justify-center">
           <UploadButton fetchFiles={fetchFiles} />
         </div>
       </div>

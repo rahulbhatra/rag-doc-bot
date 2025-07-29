@@ -1,42 +1,19 @@
-import { useRef, useEffect } from "react";
-import { useUploadDocument } from "../hooks/useUploadDocument";
-
-interface Props {
-  fetchFiles: () => Promise<void>
-}
-
-export default function UploadButton({ fetchFiles }: Props) {
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const { mutate: uploadDocument } = useUploadDocument();
-
-  const handleUpload = () => {
-    const file = fileInputRef.current?.files?.[0];
+export default function UploadButton({ fetchFiles }: { fetchFiles: () => void }) {
+  const handleChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
     if (!file) return;
-
-    uploadDocument(file, {
-      onSuccess: () => fetchFiles(),
-    });
+    const formData = new FormData();
+    formData.append("file", file);
+    await fetch("/upload", { method: "POST", body: formData });
+    fetchFiles();
   };
 
-  useEffect(() => {
-    fetchFiles();
-  }, []);
-
   return (
-    <div className="flex items-center justify-between mb-4">
-      <button
-        onClick={() => fileInputRef.current?.click()}
-        className="bg-blue-500 text-white text-xl font-bold w-10 h-10 flex items-center justify-center rounded-full hover:bg-blue-600 transition"
-        title="Upload Document"
-      >
+    <label className="cursor-pointer">
+      <input type="file" className="hidden" onChange={handleChange} />
+      <div className="w-10 h-10 rounded-full bg-blue-600 hover:bg-blue-700 text-white flex items-center justify-center transition">
         +
-      </button>
-      <input
-        type="file"
-        ref={fileInputRef}
-        className="hidden"
-        onChange={handleUpload}
-      />
-    </div>
+      </div>
+    </label>
   );
 }
