@@ -14,5 +14,5 @@ source venv/bin/activate
 pip install -r requirements.txt
 
 
-### Luanch the server
-uvicorn main:app --reload
+### Launch the server from root of project
+uvicorn backend.fastapi.main:app
