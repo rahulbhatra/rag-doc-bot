@@ -1,7 +1,6 @@
 import { useState } from "react";
 import ChatInput from "./components/ChatInput";
 import ChatMessages from "./components/ChatMessages";
-import DocumentManager from "./components/DocumentManager";
 import { useChatQuery } from "./hooks/useChatQuery";
 
 interface Message {
@@ -39,8 +38,7 @@ const App: React.FC = () => {
         <div className="flex-1 overflow-y-auto">
           <ChatMessages messages={messages} isLoading={isLoading} />
         </div>
-        <ChatInput onSend={sendMessage} isLoading={isLoading} />
-        <DocumentManager />  
+        <ChatInput onSend={sendMessage} isLoading={isLoading} /> 
       </main>
       <footer className="text-center text-sm text-gray-500 py-2 border-t">
         Built with ❤️ using FastAPI, Ollama, and React
