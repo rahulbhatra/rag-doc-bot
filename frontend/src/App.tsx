@@ -2,6 +2,7 @@ import { useState } from "react";
 import ChatInput from "./components/ChatInput";
 import ChatMessages from "./components/ChatMessages";
 import { parseSSE } from "./utils/parseSSE";
+import DocumentManager from "./components/DocumentManager";
 
 interface Message {
   role: "user" | "assistant";
@@ -26,11 +27,14 @@ const App: React.FC = () => {
     }
 
     // Prepare new assistant message
-    const assistantMsg: Message = { role: "assistant", text: "" };
+    const data = await res.json();
+    const assistantMsg: Message = { role: "assistant", text: data.answer };
     setMessages((prev) => [...prev, assistantMsg]);
 
     // Stream in content
-    for await (const chunk of parseSSE(res)) {
+    const chunks = await parseSSE(res)
+    console.log("chunks", chunks);
+    for await (const chunk of chunks) {
       console.log("Chunks gotten", chunk);
       assistantMsg.text += chunk;
       setMessages((prev) => [...prev.slice(0, -1), assistantMsg]);
@@ -38,9 +42,10 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="h-screen flex flex-col">
+    <div>
       <ChatMessages messages={messages} />
       <ChatInput onSend={sendMessage} />
+      <DocumentManager />
     </div>
   );
 };
