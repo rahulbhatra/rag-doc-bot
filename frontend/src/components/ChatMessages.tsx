@@ -1,5 +1,3 @@
-import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
 
 interface Message {
   role: "user" | "assistant";
@@ -8,21 +6,28 @@ interface Message {
 
 interface ChatMessagesProps {
   messages: Message[];
+  isLoading: boolean;
 }
 
 interface Message { role: 'user' | 'assistant'; text: string; }
 
-const ChatMessages: React.FC<ChatMessagesProps> = ({ messages }) => (
+const ChatMessages: React.FC<ChatMessagesProps> = ({ messages, isLoading }) => (
   <div className="...">
-    {messages.map((m, idx) => (
-      <div key={idx} className="...">
-        {m.role === 'assistant' ? (
-          <ReactMarkdown remarkPlugins={[remarkGfm]}>
-            {m.text}
-          </ReactMarkdown>
-        ) : (
-          <p>{m.text}</p>
-        )}
+    {isLoading && (
+      <div className="self-start p-3 bg-gray-100 text-gray-600 rounded-xl animate-pulse">
+        Typing...
+      </div>
+    )}
+    {messages.map((message, idx) => (
+      <div
+          key={idx}
+          className={`p-3 rounded-xl max-w-[80%] ${
+            message.role === "user"
+              ? "bg-blue-500 text-white self-end"
+              : "bg-gray-200 text-gray-900 self-start"
+          }`}
+        >
+        { message.text }
       </div>
     ))}
   </div>

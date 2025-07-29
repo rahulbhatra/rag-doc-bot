@@ -11,8 +11,10 @@ interface Message {
 
 const App: React.FC = () => {
   const [messages, setMessages] = useState<Message[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
 
   const sendMessage = async (question: string) => {
+    setIsLoading(true);
     setMessages((prev) => [...prev, { role: "user", text: question }]);
     const res = await fetch("/query", {
       method: "POST",
@@ -39,13 +41,22 @@ const App: React.FC = () => {
       assistantMsg.text += chunk;
       setMessages((prev) => [...prev.slice(0, -1), assistantMsg]);
     }
+    setIsLoading(false);
   };
 
   return (
     <div>
-      <ChatMessages messages={messages} />
-      <ChatInput onSend={sendMessage} />
-      <DocumentManager />
+      <header className="shadow bg-white p-4 text-xl font-bold text-center">
+        ⚡ Smart Document Assistant
+      </header>
+      <main className="flex-1 container mx-auto p-4">
+        <ChatMessages messages={messages} isLoading={isLoading} />
+        <ChatInput onSend={sendMessage} />
+        <DocumentManager />  
+      </main>
+      <footer className="text-center text-sm text-gray-500 py-2 border-t">
+        Built with ❤️ using FastAPI, Ollama, and React
+      </footer>
     </div>
   );
 };
