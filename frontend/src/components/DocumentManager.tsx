@@ -1,50 +1,29 @@
-import { useEffect, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import { useUploadDocument } from "../hooks/useUploadDocument";
-// import { toast } from "react-toastify"; // Uncomment if using toast
 
 export default function DocumentManager() {
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [files, setFiles] = useState<string[]>([]);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const { mutate: uploadDocument, isPending: isLoading } = useUploadDocument();
+  const { mutate: uploadDocument } = useUploadDocument();
 
   const fetchFiles = async () => {
-    try {
-      const res = await fetch("/upload");
-      const data = await res.json();
-      setFiles(data.files);
-    } catch (err) {
-      console.error("Failed to fetch files", err);
-    }
+    const res = await fetch("/upload");
+    const data = await res.json();
+    setFiles(data.files);
   };
 
   const handleUpload = () => {
-    if (!selectedFile) {
-      // toast.error("Please select a file to upload.");
-      return;
-    }
+    const file = fileInputRef.current?.files?.[0];
+    if (!file) return;
 
-    // toast.loading("Uploading...", { id: "upload" });
-
-    uploadDocument(selectedFile, {
-      onSuccess: () => {
-        // toast.success("✅ Upload successful!", { id: "upload" });
-        fetchFiles();
-        setSelectedFile(null);
-      },
-      onError: (err: unknown) => {
-        // toast.error(`❌ ${err.message || "Upload failed"}`, { id: "upload" });
-        console.error("Upload failed", err);
-      },
+    uploadDocument(file, {
+      onSuccess: () => fetchFiles(),
     });
   };
 
   const handleDelete = async (filename: string) => {
-    try {
-      await fetch(`/upload/${filename}`, { method: "DELETE" });
-      fetchFiles();
-    } catch (err) {
-      console.error("Delete failed", err);
-    }
+    await fetch(`/upload/${filename}`, { method: "DELETE" });
+    fetchFiles();
   };
 
   useEffect(() => {
@@ -53,21 +32,21 @@ export default function DocumentManager() {
 
   return (
     <div className="p-4 border rounded shadow-md w-full max-w-xl mx-auto bg-white">
-      <h2 className="text-xl font-semibold mb-4">Manage Documents</h2>
-
-      <div className="flex items-center gap-2 mb-4">
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-xl font-semibold">Manage Documents</h2>
+        <button
+          onClick={() => fileInputRef.current?.click()}
+          className="bg-blue-500 text-white text-xl font-bold w-10 h-10 flex items-center justify-center rounded-full hover:bg-blue-600 transition"
+          title="Upload Document"
+        >
+          +
+        </button>
         <input
           type="file"
-          onChange={(e) => setSelectedFile(e.target.files?.[0] ?? null)}
-          className="border p-2 rounded w-full"
+          ref={fileInputRef}
+          className="hidden"
+          onChange={handleUpload}
         />
-        <button
-          onClick={handleUpload}
-          disabled={isLoading}
-          className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 disabled:opacity-50"
-        >
-          {isLoading ? "Uploading..." : "Upload"}
-        </button>
       </div>
 
       <ul className="space-y-2">
@@ -76,7 +55,7 @@ export default function DocumentManager() {
             key={file}
             className="flex justify-between items-center bg-gray-100 p-2 rounded"
           >
-            <span className="truncate">{file}</span>
+            <span>{file}</span>
             <button
               onClick={() => handleDelete(file)}
               className="text-red-500 hover:underline"

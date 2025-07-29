@@ -2,9 +2,10 @@ import { useState } from "react";
 
 interface ChatInputProps {
   onSend: (text: string) => void;
+  isLoading: boolean;
 }
 
-const ChatInput: React.FC<ChatInputProps> = ({ onSend }) => {
+const ChatInput: React.FC<ChatInputProps> = ({ onSend, isLoading }) => {
   const [text, setText] = useState("");
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -20,7 +21,7 @@ const ChatInput: React.FC<ChatInputProps> = ({ onSend }) => {
         value={text}
         onChange={(e) => setText(e.target.value)}
       />
-      <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded-xl hover:bg-blue-700 transition">
+      <button disabled={isLoading} type="submit" className="bg-blue-600 text-white px-4 py-2 rounded-xl hover:bg-blue-700 transition">
         Send
       </button>
     </form>

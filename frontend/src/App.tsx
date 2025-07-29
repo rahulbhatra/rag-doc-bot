@@ -35,7 +35,7 @@ const App: React.FC = () => {
         <div className="flex-1 overflow-y-auto">
           <ChatMessages messages={messages} isLoading={isLoading} />
         </div>
-        <ChatInput onSend={sendMessage} />
+        <ChatInput onSend={sendMessage} isLoading={isLoading} />
         <DocumentManager />  
       </main>
       <footer className="text-center text-sm text-gray-500 py-2 border-t">
