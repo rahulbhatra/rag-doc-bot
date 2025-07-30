@@ -1,8 +1,9 @@
 from typing import List, Optional
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
-from backend.ingestion.retrival import load_file_text, chunk_text, retrieve_top_k
-from backend.ingestion.retrival import retrieve_top_k
+from backend.ingestion.retrival import chunk_text, retrieve_top_k
+from backend.utils.fileUtils import extract_text_from_file
+from backend.ingestion.ingestion import embed_chunks, store_embeddings_in_chroma
 from backend.llm.llm import ask_ollama
 from fastapi import UploadFile, File
 import os
@@ -42,11 +43,34 @@ UPLOAD_DIR = "uploaded_docs"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 @app.post("/upload")
-async def upload_file(file: UploadFile = File(...)):
-    file_path = os.path.join(UPLOAD_DIR, file.filename)
-    with open(file_path, "wb") as buffer:
-        shutil.copyfileobj(file.file, buffer)
-    return {"filename": file.filename}
+async def upload_and_ingest(file: UploadFile = File(...)):
+    try:
+        file_path = os.path.join(UPLOAD_DIR, file.filename)
+
+        # 1. Save uploaded file
+        contents = await file.read()
+        with open(file_path, "wb") as f:
+            f.write(contents)
+
+        # 2. Extract text (supports .pdf, .txt, .docx)
+        text = extract_text_from_file(file_path)
+        if not text.strip():
+            raise HTTPException(status_code=400, detail="Could not extract text from document.")
+
+        # 3. Chunk the text
+        chunks = chunk_text(text)
+
+        # 4. Generate embeddings
+        vectors = embed_chunks(chunks)
+
+        # 5. Store embeddings
+        store_embeddings_in_chroma(chunks, vectors, metadata={"filename": file.filename})
+
+        return {"status": "success", "filename": file.filename, "chunks": len(chunks)}
+
+    except Exception as e:
+        print(e.with_traceback)
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @app.get("/upload")

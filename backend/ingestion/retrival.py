@@ -31,6 +31,7 @@ def retrieve_top_k(query: str, top_k: int = 3):
     dists = results["distances"][0]
     return list(zip(docs, metas, dists))
 
+@DeprecationWarning
 def load_file_text(path: str) -> str:
     ext = Path(path).suffix.lower()
     if ext in [".txt", ".md"]:
