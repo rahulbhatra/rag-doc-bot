@@ -63,7 +63,7 @@ const App: React.FC = () => {
           <ChatMessages messages={messages} isLoading={isLoading} />
         </div>
         <div className="sticky bottom-0 z-40 bg-gray-50">
-          <ChatInput onSend={sendMessage} isLoading={isLoading} /> 
+          <ChatInput onSend={sendMessage} onStop={() => {}} isLoading={isLoading} /> 
         </div>
       </main>
       <footer className="bg-gray-50 text-center text-sm text-gray-500 py-2 border-t">

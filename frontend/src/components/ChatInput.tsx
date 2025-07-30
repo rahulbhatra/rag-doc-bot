@@ -1,18 +1,20 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import UploadButton from "./UploadButton";
 import Files from "./Files";
-import { FaSpinner, FaCheckCircle } from "react-icons/fa";
+import { FaSpinner, FaCheckCircle, FaStop } from "react-icons/fa";
 import { FiSend } from "react-icons/fi";
 import { useUploadDocument } from "../hooks/useUploadDocument";
 
 interface ChatInputProps {
   onSend: (text: string) => void;
+  onStop: () => void;
   isLoading: boolean;
 }
 
-const ChatInput: React.FC<ChatInputProps> = ({ onSend, isLoading }) => {
+const ChatInput: React.FC<ChatInputProps> = ({ onSend, onStop, isLoading }) => {
   const [text, setText] = useState("");
   const [files, setFiles] = useState<string[]>([]);
+  const abortRef = useRef<AbortController | null>(null);
 
   const { mutate: uploadDocument, isPending: isUploadPending, data } = useUploadDocument();
 
@@ -39,6 +41,13 @@ const ChatInput: React.FC<ChatInputProps> = ({ onSend, isLoading }) => {
       fetchFiles();
     } catch (err) {
       console.error("Delete failed:", err);
+    }
+  };
+
+  const handleStop = () => {
+    if (abortRef.current) {
+      abortRef.current.abort();
+      onStop();
     }
   };
 
@@ -79,13 +88,23 @@ const ChatInput: React.FC<ChatInputProps> = ({ onSend, isLoading }) => {
           value={text}
           onChange={(e) => setText(e.target.value)}
         />
-        <button
-          type="submit"
-          disabled={isLoading}
-          className="bg-blue-600 text-white p-2 rounded-full hover:bg-blue-700 disabled:opacity-100 transition"
-        >
-          <FiSend className="w-5 h-5" />
-        </button>
+        {isLoading ? (
+          <button
+            type="button"
+            onClick={handleStop}
+            className="bg-gray-600 hover:bg-gray-700 text-white w-10 h-10 flex items-center justify-center rounded-full transition"
+          >
+            <FaStop className="w-4 h-4" />
+          </button>
+        ) : (
+          <button
+            type="submit"
+            disabled={isLoading}
+            className="bg-blue-600 text-white p-2 hover:bg-blue-700 disabled:opacity-100  w-10 h-10 flex items-center justify-center rounded-full transition"
+          >
+            <FiSend className="w-4 h-4" />
+          </button>
+        )}
         {/* Upload Button */}
         <div className="flex items-center justify-center">
           <UploadButton fetchFiles={fetchFiles} uploadDocument={uploadDocument} />
