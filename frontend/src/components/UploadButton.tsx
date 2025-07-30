@@ -1,10 +1,11 @@
-export default function UploadButton({ fetchFiles }: { fetchFiles: () => void }) {
+import type { UseMutateFunction } from "@tanstack/react-query";
+
+export default function UploadButton({ fetchFiles, uploadDocument }: { fetchFiles: () => void, uploadDocument: UseMutateFunction<unknown, Error, File, unknown> }) {
   const handleChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    const formData = new FormData();
-    formData.append("file", file);
-    await fetch("/upload", { method: "POST", body: formData });
+
+    await uploadDocument(file);
     fetchFiles();
   };
 

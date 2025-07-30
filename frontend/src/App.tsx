@@ -62,10 +62,10 @@ const App: React.FC = () => {
         <div className="flex-1 overflow-y-auto">
           <ChatMessages messages={messages} isLoading={isLoading} />
         </div>
+        <div className="sticky bottom-0 z-40 bg-gray-50">
+          <ChatInput onSend={sendMessage} isLoading={isLoading} /> 
+        </div>
       </main>
-      <div className="sticky bottom-0 z-40 bg-gray-50 border-t">
-        <ChatInput onSend={sendMessage} isLoading={isLoading} /> 
-      </div>
       <footer className="bg-gray-50 text-center text-sm text-gray-500 py-2 border-t">
         Built with ❤️ using FastAPI, Ollama, and React
       </footer>

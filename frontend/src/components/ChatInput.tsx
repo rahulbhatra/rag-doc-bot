@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import UploadButton from "./UploadButton";
 import Files from "./Files";
+import { FaSpinner, FaCheckCircle } from "react-icons/fa";
+import { useUploadDocument } from "../hooks/useUploadDocument";
 
 interface ChatInputProps {
   onSend: (text: string) => void;
@@ -10,6 +12,8 @@ interface ChatInputProps {
 const ChatInput: React.FC<ChatInputProps> = ({ onSend, isLoading }) => {
   const [text, setText] = useState("");
   const [files, setFiles] = useState<string[]>([]);
+
+  const { mutate: uploadDocument, isPending: isUploadPending, data } = useUploadDocument();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -44,8 +48,24 @@ const ChatInput: React.FC<ChatInputProps> = ({ onSend, isLoading }) => {
   return (
     <form
       onSubmit={handleSubmit}
-      className="flex flex-col gap-4 p-4 border-t bg-white shadow-md"
+      className="flex flex-col px-4 py-2 bg-gray-100 shadow-md rounded-2xl"
     >
+      <div className="flex flex-col items-start gap-1">
+        {isUploadPending && (
+          <div className="flex items-center gap-2 text-blue-600 text-sm">
+            <FaSpinner className="animate-spin" />
+            <span>Uploading & Processing...</span>
+          </div>
+        )}
+
+        {data && (
+          <div className="flex items-center gap-2 text-green-600 text-sm">
+            <FaCheckCircle />
+            <span>{data.chunks} chunks extracted</span>
+          </div>
+        )}
+      </div>
+
       {/* Uploaded Files List */}
       <Files files={files} onDelete={handleDelete} />
 
@@ -68,7 +88,7 @@ const ChatInput: React.FC<ChatInputProps> = ({ onSend, isLoading }) => {
         </button>
         {/* Upload Button */}
         <div className="flex items-center justify-center">
-          <UploadButton fetchFiles={fetchFiles} />
+          <UploadButton fetchFiles={fetchFiles} uploadDocument={uploadDocument} />
         </div>
       </div>
     </form>
