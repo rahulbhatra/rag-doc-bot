@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import UploadButton from "./UploadButton";
 import Files from "./Files";
 import { FaSpinner, FaCheckCircle } from "react-icons/fa";
+import { FiSend } from "react-icons/fi";
 import { useUploadDocument } from "../hooks/useUploadDocument";
 
 interface ChatInputProps {
@@ -77,14 +78,13 @@ const ChatInput: React.FC<ChatInputProps> = ({ onSend, isLoading }) => {
           placeholder="Ask anything"
           value={text}
           onChange={(e) => setText(e.target.value)}
-          disabled={isLoading}
         />
         <button
           type="submit"
           disabled={isLoading}
-          className="bg-blue-600 text-white px-4 py-2 rounded-xl hover:bg-blue-700 disabled:opacity-50 transition"
+          className="bg-blue-600 text-white p-2 rounded-full hover:bg-blue-700 disabled:opacity-100 transition"
         >
-          Send
+          <FiSend className="w-5 h-5" />
         </button>
         {/* Upload Button */}
         <div className="flex items-center justify-center">

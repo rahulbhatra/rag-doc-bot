@@ -58,7 +58,7 @@ const App: React.FC = () => {
           </div>
         </div>
       </header>
-      <main className="flex-1 container mx-auto p-4 flex flex-col gap-4">
+      <main className="flex-1 container mx-auto p-4 flex flex-col gap-4 overflow-auto px-4 py-2">
         <div className="flex-1 overflow-y-auto">
           <ChatMessages messages={messages} isLoading={isLoading} />
         </div>

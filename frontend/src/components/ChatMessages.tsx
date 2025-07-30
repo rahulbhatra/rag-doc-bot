@@ -12,7 +12,7 @@ interface ChatMessagesProps {
 interface Message { role: 'user' | 'assistant'; text: string; }
 
 const ChatMessages: React.FC<ChatMessagesProps> = ({ messages, isLoading }) => (
-  <div className="flex flex-col gap-3 px-4 py-4 overflow-y-auto max-h-[calc(100vh-300px)]">
+  <div className="flex flex-col gap-3 px-4 py-4 overflow-y-auto max-h-[calc(100vh-200px)]">
     {messages.map((message, idx) => (
       <div>
         { message.text && (
@@ -30,8 +30,14 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({ messages, isLoading }) => (
       </div>
     ))}
     {isLoading && (
-      <div className="self-start p-3 bg-gray-100 text-gray-600 rounded-xl animate-pulse">
-        Typing...
+      <div className="flex items-center space-x-2 my-2">
+        <div className="bg-gray-100 p-3 rounded-xl max-w-sm animate-pulse">
+          <div className="flex space-x-1">
+            <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce [animation-delay:-0.3s]"></div>
+            <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce [animation-delay:-0.15s]"></div>
+            <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
+          </div>
+        </div>
       </div>
     )}
   </div>
