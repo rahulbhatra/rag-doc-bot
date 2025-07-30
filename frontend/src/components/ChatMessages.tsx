@@ -12,16 +12,16 @@ interface ChatMessagesProps {
 interface Message { role: 'user' | 'assistant'; text: string; }
 
 const ChatMessages: React.FC<ChatMessagesProps> = ({ messages, isLoading }) => (
-  <div className="...">
+  <div className="flex flex-col gap-3 px-4 py-4 overflow-y-auto max-h-[calc(100vh-300px)]">
     {messages.map((message, idx) => (
       <div>
         { message.text && (
           <div
             key={idx}
-            className={`p-3 rounded-xl max-w-[80%] ${
+            className={`w-fit rounded-2xl px-4 py-2 whitespace-pre-wrap break-words text-sm shadow-sm ${
               message.role === "user"
-                ? "bg-blue-500 text-white self-end"
-                : "bg-gray-200 text-gray-900 self-start"
+                ? "bg-blue-100 self-end text-right"
+                : "bg-gray-100 self-start text-left"
             }`}
           >
           { message.text }

@@ -31,16 +31,42 @@ const App: React.FC = () => {
 
   return (
     <div className="flex flex-col min-h-screen">
-      <header className="shadow bg-white p-4 text-xl font-bold text-center">
-        ⚡ Smart Document Assistant
+      <header className="sticky top-0 z-50 bg-gray-50 shadow-sm border-b">
+        <div className="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between">
+          {/* Logo and Brand */}
+          <div className="flex items-center gap-3">
+            <div className="bg-blue-600 text-white rounded-full p-2 text-lg font-bold">
+              ⚡
+            </div>
+            <span className="text-xl font-semibold text-gray-800 tracking-tight">
+              Smart Document Assistant
+            </span>
+          </div>
+
+          {/* Right-side Navigation (Optional - Replace or Extend) */}
+          <div className="hidden md:flex items-center gap-6 text-sm text-gray-600">
+            <a href="#chat" className="hover:text-blue-600 transition">Chat</a>
+            <a href="#upload" className="hover:text-blue-600 transition">Documents</a>
+            <a
+              href="https://github.com/rahulbhatra/rag-doc-bot"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-blue-600 transition"
+            >
+              GitHub
+            </a>
+          </div>
+        </div>
       </header>
       <main className="flex-1 container mx-auto p-4 flex flex-col gap-4">
         <div className="flex-1 overflow-y-auto">
           <ChatMessages messages={messages} isLoading={isLoading} />
         </div>
-        <ChatInput onSend={sendMessage} isLoading={isLoading} /> 
       </main>
-      <footer className="text-center text-sm text-gray-500 py-2 border-t">
+      <div className="sticky bottom-0 z-40 bg-gray-50 border-t">
+        <ChatInput onSend={sendMessage} isLoading={isLoading} /> 
+      </div>
+      <footer className="bg-gray-50 text-center text-sm text-gray-500 py-2 border-t">
         Built with ❤️ using FastAPI, Ollama, and React
       </footer>
     </div>
