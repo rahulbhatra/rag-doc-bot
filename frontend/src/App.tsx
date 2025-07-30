@@ -32,13 +32,13 @@ const App: React.FC = () => {
   return (
     <div className="flex flex-col min-h-screen">
       <header className="sticky top-0 z-50 bg-gray-50 shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between">
+        <div className="mx-auto px-3 py-1 flex items-center justify-between">
           {/* Logo and Brand */}
           <div className="flex items-center gap-3">
-            <div className="bg-blue-600 text-white rounded-full p-2 text-lg font-bold">
+            <div className="bg-blue-200 text-white rounded-full p-2 text-lg font-bold">
               ⚡
             </div>
-            <span className="text-xl font-semibold text-gray-800 tracking-tight">
+            <span className="text-l font-semibold text-gray-600 tracking-tight">
               Smart Document Assistant
             </span>
           </div>
