@@ -27,7 +27,7 @@ async def query_endpoint(req: QueryRequest):
 
     # Step 1: Retrieve relevant context chunks
     docs = retrieve_top_k(question, top_k=3)
-    context = "\n".join([doc["content"] for doc in docs])
+    context = "\n".join([doc[0] for doc in docs])
 
     # Step 2: Build prompt
     prompt = f"Context:\n{context}\n\nQuestion: {question}\nAnswer:"
@@ -52,19 +52,26 @@ async def upload_and_ingest(file: UploadFile = File(...)):
         with open(file_path, "wb") as f:
             f.write(contents)
 
+        print(f"Saved file to {file_path}")
+
         # 2. Extract text (supports .pdf, .txt, .docx)
         text = extract_text_from_file(file_path)
         if not text.strip():
             raise HTTPException(status_code=400, detail="Could not extract text from document.")
+        
+        print("Text extraction successful")
 
         # 3. Chunk the text
         chunks = chunk_text(text)
+        print(f"Chunked into {len(chunks)} pieces")
 
         # 4. Generate embeddings
         vectors = embed_chunks(chunks)
+        print("Embeddings generated")
 
         # 5. Store embeddings
-        store_embeddings_in_chroma(chunks, vectors, metadata={"filename": file.filename})
+        store_embeddings_in_chroma(chunks, vectors, file.filename)
+        print("Embeddings stored")
 
         return {"status": "success", "filename": file.filename, "chunks": len(chunks)}
 
