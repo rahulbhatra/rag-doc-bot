@@ -1,32 +1,56 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import ChatInput from "./components/ChatInput";
-import ChatMessages from "./components/ChatMessages";
+import ChatMessages, { type Message } from "./components/ChatMessages";
 import { useChatQuery } from "./hooks/useChatQuery";
-
-interface Message {
-  role: "user" | "assistant";
-  text: string;
-}
+import { useAddMessageToSession, useCreateSession, useSessionMessages } from "./hooks/useChatSessions";
+import SessionList from "./components/SessionList";
 
 const App: React.FC = () => {
-  const [messages, setMessages] = useState<Message[]>([]);
+  const [sessionId, setSessionId] = useState<number | null>(null);
+  const { mutate: createSession } = useCreateSession();
+
+  useEffect(() => {
+    if (!sessionId) {
+      createSession(undefined, {
+        onSuccess: (data) => setSessionId(data.id),
+      });
+    }
+  }, [createSession, sessionId]);
+
+  const { data: sessionMessages = [] } = useSessionMessages(sessionId);
+  const { mutate: addMessage } = useAddMessageToSession(sessionId);
+  const [streamingMessage, setStreamingMessage] = useState<Message | null>(null);
 
   const { mutate: sendQuery, isPending: isLoading } = useChatQuery((chunk) => {
-    setMessages((prev) => {
-      const last = prev[prev.length - 1];
-      const updated = { ...last, text: last.text + chunk };
-      return [...prev.slice(0, -1), updated];
-    });
+    const lastMessage = sessionMessages[sessionMessages.length - 1];
+    if (lastMessage?.role === "assistant") {
+      setStreamingMessage((prev) => {
+        if (!prev) return { role: "assistant", text: chunk, timestamp: new Date().toISOString() };
+        return { ...prev, text: prev.text + chunk };
+      });
+    }
   });
 
   const sendMessage = (question: string) => {
-    setMessages((prev) => [...prev, { role: "user", text: question }, { role: "assistant", text: "" }]);
+    const userMessage : Message = { role: "user", text: question, timestamp: new Date().toISOString() };
+    // const assistantPlaceholder : Message = { role: "assistant", text: "", timestamp: new Date().toISOString() };
 
-    sendQuery(question, {
-      onError: (err) => {
-        setMessages((prev) => [...prev.slice(0, -1), { role: "assistant", text: `❌ ${err.message}` }]);
+    addMessage(userMessage);
+
+    sendQuery({ sessionId, question }, {
+      onSuccess: () => {
+        // stream response or send final assistant message to backend
+        if (streamingMessage) {
+          addMessage(streamingMessage);
+          setStreamingMessage(null);
+        }
       },
-    });
+      onError: (err) => {
+        const errorMsg: Message = { role: "assistant", text: `❌ ${err.message}`, timestamp: new Date().toISOString() };
+        addMessage(errorMsg);
+        setStreamingMessage(null);
+      },
+  });
   };
 
   return (
@@ -59,8 +83,11 @@ const App: React.FC = () => {
         </div>
       </header>
       <main className="flex-1 container mx-auto p-4 flex flex-col gap-4 overflow-auto px-4 py-2">
+        <div>
+          <SessionList />
+        </div>
         <div className="flex-1 overflow-y-auto">
-          <ChatMessages messages={messages} isLoading={isLoading} />
+          <ChatMessages messages={[...sessionMessages, ...(streamingMessage ? [streamingMessage] : [])]} isLoading={isLoading} />
         </div>
         <div className="sticky bottom-0 z-40 bg-gray-50">
           <ChatInput onSend={sendMessage} onStop={() => {}} isLoading={isLoading} /> 

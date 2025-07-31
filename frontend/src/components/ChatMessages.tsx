@@ -1,15 +1,14 @@
 
-interface Message {
+export interface Message {
   role: "user" | "assistant";
   text: string;
+  timestamp: string;
 }
 
 interface ChatMessagesProps {
   messages: Message[];
   isLoading: boolean;
 }
-
-interface Message { role: 'user' | 'assistant'; text: string; }
 
 const ChatMessages: React.FC<ChatMessagesProps> = ({ messages, isLoading }) => (
   <div className="flex flex-col gap-3 px-4 py-4 overflow-y-auto max-h-[calc(100vh-200px)]">
@@ -18,7 +17,7 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({ messages, isLoading }) => (
         { message.text && (
           <div
             key={idx}
-            className={`w-fit rounded-2xl px-4 py-2 max-w-2xl whitespace-pre-wrap break-words text-sm shadow-sm ${
+            className={`w-fit rounded-2xl px-4 py-2 whitespace-pre-wrap break-words text-sm shadow-sm ${
               message.role === "user"
                 ? "bg-blue-100 self-end text-right"
                 : "bg-gray-100 self-start text-left"

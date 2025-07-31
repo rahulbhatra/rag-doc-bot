@@ -1,0 +1,68 @@
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import type { Message } from "../components/ChatMessages";
+
+export interface ChatSession {
+  id: number;
+  title: string;
+  created_at: string;
+  messages: Message[];
+}
+
+export const useChatSessions = () => {
+  return useQuery<ChatSession[]>({
+    queryKey: ["chatSessions"],
+    queryFn: async () => {
+      const res = await fetch("/sessions");
+      if (!res.ok) throw new Error("Failed to fetch sessions");
+      return res.json();
+    },
+  });
+};
+
+export const useCreateSession = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (title?: string) => {
+      const res = await fetch("/sessions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: title ? JSON.stringify({ title }) : null,
+      });
+      if (!res.ok) throw new Error("Failed to create session");
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["chatSessions"] });
+    },
+  });
+};
+
+export const useSessionMessages = (sessionId: number | null) => {
+  return useQuery({
+    queryKey: ["sessionMessages", sessionId],
+    enabled: !!sessionId,
+    queryFn: async () => {
+      const res = await fetch(`/sessions/${sessionId}/messages`);
+      if (!res.ok) throw new Error("Failed to fetch messages");
+      return res.json();
+    },
+  });
+};
+
+export const useAddMessageToSession = (sessionId: number | null) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (message: Message) => {
+      const res = await fetch(`/sessions/${sessionId}/messages`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(message),
+      });
+      if (!res.ok) throw new Error("Failed to send message");
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["sessionMessages", sessionId]});
+    },
+  });
+};
