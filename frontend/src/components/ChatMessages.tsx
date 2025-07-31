@@ -11,7 +11,7 @@ interface ChatMessagesProps {
 }
 
 const ChatMessages: React.FC<ChatMessagesProps> = ({ messages, isLoading }) => (
-  <div className="flex flex-col gap-3 px-4 py-4 overflow-y-auto max-h-[calc(100vh-200px)]">
+  <div className="flex flex-col gap-3 px-4 py-4 overflow-y-auto">
     {messages.map((message, idx) => (
       <div>
         { message.text && (

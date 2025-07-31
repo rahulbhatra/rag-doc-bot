@@ -22,13 +22,19 @@ const App: React.FC = () => {
   const [streamingMessage, setStreamingMessage] = useState<Message | null>(null);
 
   const { mutate: sendQuery, isPending: isLoading } = useChatQuery((chunk) => {
-    const lastMessage = sessionMessages[sessionMessages.length - 1];
-    if (lastMessage?.role === "assistant") {
-      setStreamingMessage((prev) => {
-        if (!prev) return { role: "assistant", text: chunk, timestamp: new Date().toISOString() };
-        return { ...prev, text: prev.text + chunk };
-      });
-    }
+    setStreamingMessage((prev) => {
+    if (!prev) {
+        return {
+          role: "assistant",
+          text: chunk,
+          timestamp: new Date().toISOString(),
+        };
+      }
+      return {
+        ...prev,
+        text: prev.text + chunk,
+      };
+    });
   });
 
   const sendMessage = (question: string) => {
@@ -38,19 +44,19 @@ const App: React.FC = () => {
     addMessage(userMessage);
 
     sendQuery({ sessionId, question }, {
-      onSuccess: () => {
+      onSuccess: async () => {
         // stream response or send final assistant message to backend
         if (streamingMessage) {
-          addMessage(streamingMessage);
+          await addMessage(streamingMessage);
           setStreamingMessage(null);
         }
       },
-      onError: (err) => {
+      onError: async (err) => {
         const errorMsg: Message = { role: "assistant", text: `❌ ${err.message}`, timestamp: new Date().toISOString() };
-        addMessage(errorMsg);
+        await addMessage(errorMsg);
         setStreamingMessage(null);
       },
-  });
+    });
   };
 
   return (
@@ -83,19 +89,19 @@ const App: React.FC = () => {
         </div>
       </header>
       <main className="flex-1 container flex flex-row gap-4 overflow-auto">
-        <div className="w-[10%] min-w-[100px]">
+        <div className="w-[10%] min-w-[100px] h-[calc(100vh-100px)] overflow-y-auto border-r border-gray-200">
           <SessionList selectedSessionId={sessionId} setSelectedSessionId={setSessionId} />
         </div>
-        <div className="flex-1 flex flex-col overflow-hidden">
-          <div className="flex-1 overflow-y-auto">
+        <div className="flex-1 flex flex-col overflow-hidden relative">
+          <div className="flex-1 overflow-y-auto pb-28">
             <ChatMessages messages={[...sessionMessages, ...(streamingMessage ? [streamingMessage] : [])]} isLoading={isLoading} />
           </div>
-          <div className="sticky bottom-0 z-40 bg-gray-50">
+          <div className="absolute bottom-0 w-full bg-gray-50 z-40">
             <ChatInput onSend={sendMessage} onStop={() => {}} isLoading={isLoading} /> 
           </div>
         </div>
       </main>
-      <footer className="bg-gray-50 text-center text-sm text-gray-500 py-2 border-t">
+      <footer className="sticky bottom-0 z-50 bg-gray-50 text-center text-sm text-gray-500 py-2 border-t">
         Built with ❤️ using FastAPI, Ollama, and React
       </footer>
     </div>

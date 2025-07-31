@@ -6,7 +6,7 @@ const SessionList = ({ selectedSessionId, setSelectedSessionId } : { selectedSes
 
   if (isLoading) {
     return (
-      <div className="w-[10%] min-w-[120px] h-screen border-r border-gray-200 bg-gray-50 p-4">
+      <div className="w-full sm:w-[30%] md:w-[20%] lg:w-[10%] min-w-[120px] h-screen border-r border-gray-200 bg-gray-50 p-4">
         <p className="text-gray-500 animate-pulse">Loading sessions...</p>
       </div>
     );
@@ -14,34 +14,46 @@ const SessionList = ({ selectedSessionId, setSelectedSessionId } : { selectedSes
 
   if (error) {
     return (
-      <div className="w-[10%] min-w-[120px] h-screen border-r border-gray-200 bg-gray-50 p-4">
+      <div className="w-full sm:w-[30%] md:w-[20%] lg:w-[10%] min-w-[120px] h-screen border-r border-gray-200 bg-gray-50 p-4">
         <p className="text-red-500">Failed to load sessions</p>
       </div>
     );
   }
 
   return (
-    <aside className="w-[10%] min-w-[120px] h-screen border-r border-gray-200 bg-gray-50 p-4" aria-label="Session list">
+    <aside className="w-full sm:w-[30%] md:w-[20%] lg:w-[10%] min-w-[120px] h-screen border-r border-gray-200 bg-gray-50 p-4" aria-label="Session list">
       <h2 className="text-sm font-semibold text-gray-700 mb-4 uppercase tracking-wide">History</h2>
-      <ul className="space-y-2">
-        {sessions?.map((session, index) => {
-          const sessionId = session?.id || index;
-          const isSelected = selectedSessionId === sessionId;
-          const displayName = session?.title?.trim() || `Session #${index + 1}`;
-          return (
-            <li
-              key={sessionId}
-              className={`px-3 py-2 text-sm rounded cursor-pointer truncate transition-colors duration-150 ${
-                isSelected ? "bg-blue-100 text-blue-700 font-medium" : "hover:bg-gray-200"
-              }`}
-              onClick={() => setSelectedSessionId(sessionId)}
-              aria-current={isSelected ? "true" : "false"}
-            >
-              {displayName}
-            </li>
-          );
-        })}
-      </ul>
+      {sessions?.length === 0 ? (
+        <div className="text-sm text-gray-500 italic">
+          No sessions yet. Start a conversation to see it here!
+        </div>
+      ) : (
+        <ul className="space-y-2" role="list">
+          {sessions?.map((session, index) => {
+            const sessionId = session?.id || index;
+            const isSelected = selectedSessionId === sessionId;
+            const displayName = session?.title?.trim() || `Session #${index + 1}`;
+            return (
+              <li
+                key={sessionId}
+                role="listitem"
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") setSelectedSessionId(sessionId);
+                }}
+                className={`px-3 py-2 text-sm rounded cursor-pointer truncate transition-colors duration-150 ${
+                  isSelected ? "bg-blue-100 text-blue-700 font-medium" : "hover:bg-gray-200"
+                }`}
+                onClick={() => setSelectedSessionId(sessionId)}
+                aria-current={isSelected ? "true" : "false"}
+                aria-selected={isSelected}
+              >
+                {displayName}
+              </li>
+            );
+          })}
+        </ul>
+      )}
     </aside>
   );
 };

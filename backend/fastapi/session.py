@@ -34,6 +34,14 @@ async def add_message(session_id: int, msg: MessageCreate, db: AsyncSession = De
     if data["timestamp"].tzinfo is not None:
         data["timestamp"] = data["timestamp"].replace(tzinfo=None)
 
+    db_session: Session = await db.get(Session, session_id)
+    if not db_session.title:
+        strip_size = min(10, len(msg.text))
+        db_session.title = msg.text[:strip_size]
+        db.add(db_session)
+        await db.commit()
+        await db.refresh(db_session)
+
     db_msg = Message(**data)
     db_msg.session_id = session_id 
     msg.session_id = session_id
