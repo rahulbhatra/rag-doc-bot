@@ -11,9 +11,9 @@ const App: React.FC = () => {
 
   useEffect(() => {
     if (!sessionId) {
-      createSession(undefined, {
-        onSuccess: (data) => setSessionId(data.id),
-      });
+      // createSession(undefined, {
+      //   onSuccess: (data) => setSessionId(data.id),
+      // });
     }
   }, [createSession, sessionId]);
 
@@ -82,15 +82,17 @@ const App: React.FC = () => {
           </div>
         </div>
       </header>
-      <main className="flex-1 container mx-auto p-4 flex flex-col gap-4 overflow-auto px-4 py-2">
-        <div>
-          <SessionList />
+      <main className="flex-1 container flex flex-row gap-4 overflow-auto">
+        <div className="w-[10%] min-w-[100px]">
+          <SessionList selectedSessionId={sessionId} setSelectedSessionId={setSessionId} />
         </div>
-        <div className="flex-1 overflow-y-auto">
-          <ChatMessages messages={[...sessionMessages, ...(streamingMessage ? [streamingMessage] : [])]} isLoading={isLoading} />
-        </div>
-        <div className="sticky bottom-0 z-40 bg-gray-50">
-          <ChatInput onSend={sendMessage} onStop={() => {}} isLoading={isLoading} /> 
+        <div className="flex-1 flex flex-col overflow-hidden">
+          <div className="flex-1 overflow-y-auto">
+            <ChatMessages messages={[...sessionMessages, ...(streamingMessage ? [streamingMessage] : [])]} isLoading={isLoading} />
+          </div>
+          <div className="sticky bottom-0 z-40 bg-gray-50">
+            <ChatInput onSend={sendMessage} onStop={() => {}} isLoading={isLoading} /> 
+          </div>
         </div>
       </main>
       <footer className="bg-gray-50 text-center text-sm text-gray-500 py-2 border-t">

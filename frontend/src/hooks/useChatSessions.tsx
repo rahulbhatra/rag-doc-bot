@@ -56,7 +56,10 @@ export const useAddMessageToSession = (sessionId: number | null) => {
       const res = await fetch(`/sessions/${sessionId}/messages`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(message),
+        body: JSON.stringify({
+          ...message,
+          session_id: sessionId, // ✅ Include this in the body
+        }),
       });
       if (!res.ok) throw new Error("Failed to send message");
       return res.json();
