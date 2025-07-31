@@ -5,13 +5,23 @@ from backend.ingestion.retrival import chunk_text, retrieve_top_k
 from backend.utils.fileUtils import extract_text_from_file
 from backend.ingestion.ingestion import embed_chunks, store_embeddings_in_chroma
 from backend.llm.llm import ask_ollama
+from backend.fastapi.session import router as session_router
 from fastapi import UploadFile, File
 import os
 import shutil
 from fastapi.responses import StreamingResponse
+from fastapi.middleware.cors import CORSMiddleware
 import json
 
 app = FastAPI()
+
+# CORS setup if frontend on a different port
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 class QueryRequest(BaseModel):
     question: str
@@ -91,3 +101,5 @@ def delete_file(filename: str):
         os.remove(path)
         return {"status": "deleted"}
     return {"error": "File not found"}
+
+app.include_router(session_router)

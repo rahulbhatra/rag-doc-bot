@@ -80,6 +80,8 @@ pluggy==1.6.0
 posthog==4.8.0
 propcache==0.3.2
 protobuf==6.31.1
+psycopg==3.2.9
+psycopg-binary==3.2.9
 pulsar-client==3.8.0
 pyasn1==0.6.1
 pyasn1_modules==0.4.2
