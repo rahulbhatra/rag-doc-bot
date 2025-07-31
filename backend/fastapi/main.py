@@ -1,6 +1,7 @@
 from typing import List, Optional
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
+from backend.database.psql import init_db
 from backend.ingestion.retrival import chunk_text, retrieve_top_k
 from backend.utils.fileUtils import extract_text_from_file
 from backend.ingestion.ingestion import embed_chunks, store_embeddings_in_chroma
@@ -13,7 +14,7 @@ from fastapi.responses import StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
 import json
 
-app = FastAPI()
+app = FastAPI(on_startup=[init_db])
 
 # CORS setup if frontend on a different port
 app.add_middleware(

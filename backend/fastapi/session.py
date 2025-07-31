@@ -4,8 +4,7 @@ from sqlmodel import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from backend.models.session import Session
 from backend.models.message import Message
-from backend.database.psql import engine, init_db, get_session
-app = FastAPI(on_startup=[init_db])
+from backend.database.psql import get_session
 
 router = APIRouter(
     prefix="/sessions",
@@ -30,10 +29,10 @@ async def add_message(session_id: int, msg: Message, db: AsyncSession = Depends(
 
 @router.get("/{session_id}/messages", response_model=List[Message])
 async def list_messages(session_id: int, db: AsyncSession = Depends(get_session)):
-    result = await db.exec(select(Message).where(Message.session_id == session_id))
-    return result.all()
+    result = await db.execute(select(Message).where(Message.session_id == session_id))
+    return result.scalars().all()
 
 @router.get("", response_model=List[Session])
 async def list_sessions(db: AsyncSession = Depends(get_session)):
-    result = await db.exec(select(Session))
-    return result.all()
+    result = await db.execute(select(Session))
+    return result.scalars().all()

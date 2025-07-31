@@ -1,25 +1,38 @@
 services:
-  backend:
-    build:
-      context: ./backend
-    ports:
-      - "8000:8000"
-    volumes:
-      - ./backend:/app/backend
-    depends_on:
-      - chroma
-      - ollama
-    environment:
-      - OLLAMA_URL=http://ollama:11434
-
-  ollama:
-    image: ollama/ollama
-    container_name: ollama
-    ports:
-      - "11434:11434"
-    volumes:
-      - ollama_data:/root/.ollama
+  postgres:
+    image: postgres:15
+    container_name: postgres
     restart: always
+    environment:
+      POSTGRES_USER: rahul
+      POSTGRES_PASSWORD: 1234
+      POSTGRES_DB: ragbot
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  # backend:
+  #   build:
+  #     context: ./backend
+  #   ports:
+  #     - "8000:8000"
+  #   volumes:
+  #     - ./backend:/app/backend
+  #   depends_on:
+  #     - chroma
+  #     - ollama
+  #   environment:
+  #     - OLLAMA_URL=http://ollama:11434
+
+  # ollama:
+  #   image: ollama/ollama
+  #   container_name: ollama
+  #   ports:
+  #     - "11434:11434"
+  #   volumes:
+  #     - ollama_data:/root/.ollama
+  #   restart: always
 
   chroma:
     image: chromadb/chroma
@@ -28,6 +41,7 @@ services:
       
 volumes:
   ollama_data:
+  postgres_data:
 
 # Optional: Ollama is expected to run locally outside of Docker for now.
 # It uses GPU / Metal on host MacOS, which is tricky to containerize.
