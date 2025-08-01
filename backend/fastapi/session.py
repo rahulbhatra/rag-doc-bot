@@ -52,7 +52,7 @@ async def add_message(session_id: int, msg: MessageCreate, db: AsyncSession = De
 
 @router.get("/{session_id}/messages", response_model=List[Message])
 async def list_messages(session_id: int, db: AsyncSession = Depends(get_session)):
-    result = await db.execute(select(Message).where(Message.session_id == session_id))
+    result = await db.execute(select(Message).where(Message.session_id == session_id).order_by(Message.timestamp.asc()))
     return result.scalars().all()
 
 @router.get("", response_model=List[Session])
