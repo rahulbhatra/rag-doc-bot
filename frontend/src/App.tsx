@@ -110,15 +110,15 @@ const App: React.FC = () => {
           </div>
         </div>
       </header>
-      <main className="flex-1 container flex flex-row gap-4 overflow-auto">
-        <div className="w-[15%] min-w-[100px] h-[calc(100vh-100px)] overflow-y-auto border-r border-gray-200">
+      <main className="flex-1 flex flex-row">
+        <div className="w-full sm:w-[30%] md:w-[20%] lg:w-[10%] h-[calc(100vh-100px)] overflow-y-auto border-r border-gray-200">
           <SessionList
             selectedSessionId={sessionId}
             setSelectedSessionId={setSessionId}
           />
         </div>
-        <div className="flex-1 flex flex-col overflow-hidden relative">
-          <div className="flex-1 overflow-y-auto pb-28">
+        <div className="flex-1 flex flex-col overflow-hidden h-[calc(100vh-100px)] relative">
+          <div className="flex-1 overflow-y-auto pb-4">
             <ChatMessages
               messages={[
                 ...sessionMessages,
@@ -127,7 +127,7 @@ const App: React.FC = () => {
               isLoading={isLoading}
             />
           </div>
-          <div className="absolute bottom-0 w-full bg-gray-50 z-40">
+          <div className="sticky bottom-0 w-full bg-gray-50 z-40 flex-shrink-0">
             <ChatInput
               onSend={sendMessage}
               onStop={() => {}}
