@@ -1,8 +1,12 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import ChatInput from "./components/ChatInput";
 import ChatMessages, { type Message } from "./components/ChatMessages";
 import { useChatQuery } from "./hooks/useChatQuery";
-import { useAddMessageToSession, useCreateSession, useSessionMessages } from "./hooks/useChatSessions";
+import {
+  useAddMessageToSession,
+  useCreateSession,
+  useSessionMessages,
+} from "./hooks/useChatSessions";
 import SessionList from "./components/SessionList";
 
 const App: React.FC = () => {
@@ -19,44 +23,58 @@ const App: React.FC = () => {
 
   const { data: sessionMessages = [] } = useSessionMessages(sessionId);
   const { mutate: addMessage } = useAddMessageToSession(sessionId);
-  const [streamingMessage, setStreamingMessage] = useState<Message | null>(null);
+  const [streamingMessage, setStreamingMessage] = useState<Message | null>(
+    null,
+  );
+  const streamingMessageRef = useRef<Message | null>(null);
 
   const { mutate: sendQuery, isPending: isLoading } = useChatQuery((chunk) => {
     setStreamingMessage((prev) => {
-    if (!prev) {
-        return {
-          role: "assistant",
-          text: chunk,
-          timestamp: new Date().toISOString(),
-        };
-      }
-      return {
-        ...prev,
-        text: prev.text + chunk,
+      const updated = {
+        role: "assistant" as const,
+        text: (prev?.text ?? "") + chunk,
+        timestamp: new Date().toISOString(),
       };
+      streamingMessageRef.current = updated;
+      return updated;
     });
   });
 
   const sendMessage = (question: string) => {
-    const userMessage : Message = { role: "user", text: question, timestamp: new Date().toISOString() };
-    // const assistantPlaceholder : Message = { role: "assistant", text: "", timestamp: new Date().toISOString() };
+    const userMessage: Message = {
+      role: "user",
+      text: question,
+      timestamp: new Date().toISOString(),
+    };
 
     addMessage(userMessage);
 
-    sendQuery({ sessionId, question }, {
-      onSuccess: async () => {
-        // stream response or send final assistant message to backend
-        if (streamingMessage) {
-          await addMessage(streamingMessage);
+    sendQuery(
+      { sessionId, question },
+      {
+        onSuccess: async () => {
+          const finalMsg = streamingMessageRef.current;
+          const errorMsg: Message = {
+            role: "assistant",
+            text: `❌ ${"Some issue"}`,
+            timestamp: new Date().toISOString(),
+          };
+          await addMessage(finalMsg ?? errorMsg);
+          streamingMessageRef.current = null;
           setStreamingMessage(null);
-        }
+        },
+        onError: async (err) => {
+          const errorMsg: Message = {
+            role: "assistant",
+            text: `❌ ${err.message}`,
+            timestamp: new Date().toISOString(),
+          };
+          await addMessage(errorMsg);
+          setStreamingMessage(null);
+        },
+        onSettled: () => {},
       },
-      onError: async (err) => {
-        const errorMsg: Message = { role: "assistant", text: `❌ ${err.message}`, timestamp: new Date().toISOString() };
-        await addMessage(errorMsg);
-        setStreamingMessage(null);
-      },
-    });
+    );
   };
 
   return (
@@ -75,8 +93,12 @@ const App: React.FC = () => {
 
           {/* Right-side Navigation (Optional - Replace or Extend) */}
           <div className="hidden md:flex items-center gap-6 text-sm text-gray-600">
-            <a href="#chat" className="hover:text-blue-600 transition">Chat</a>
-            <a href="#upload" className="hover:text-blue-600 transition">Documents</a>
+            <a href="#chat" className="hover:text-blue-600 transition">
+              Chat
+            </a>
+            <a href="#upload" className="hover:text-blue-600 transition">
+              Documents
+            </a>
             <a
               href="https://github.com/rahulbhatra/rag-doc-bot"
               target="_blank"
@@ -89,15 +111,28 @@ const App: React.FC = () => {
         </div>
       </header>
       <main className="flex-1 container flex flex-row gap-4 overflow-auto">
-        <div className="w-[10%] min-w-[100px] h-[calc(100vh-100px)] overflow-y-auto border-r border-gray-200">
-          <SessionList selectedSessionId={sessionId} setSelectedSessionId={setSessionId} />
+        <div className="w-[15%] min-w-[100px] h-[calc(100vh-100px)] overflow-y-auto border-r border-gray-200">
+          <SessionList
+            selectedSessionId={sessionId}
+            setSelectedSessionId={setSessionId}
+          />
         </div>
         <div className="flex-1 flex flex-col overflow-hidden relative">
           <div className="flex-1 overflow-y-auto pb-28">
-            <ChatMessages messages={[...sessionMessages, ...(streamingMessage ? [streamingMessage] : [])]} isLoading={isLoading} />
+            <ChatMessages
+              messages={[
+                ...sessionMessages,
+                ...(streamingMessage ? [streamingMessage] : []),
+              ]}
+              isLoading={isLoading}
+            />
           </div>
           <div className="absolute bottom-0 w-full bg-gray-50 z-40">
-            <ChatInput onSend={sendMessage} onStop={() => {}} isLoading={isLoading} /> 
+            <ChatInput
+              onSend={sendMessage}
+              onStop={() => {}}
+              isLoading={isLoading}
+            />
           </div>
         </div>
       </main>

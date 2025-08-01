@@ -1,3 +1,4 @@
+import ReactMarkdown from "react-markdown";
 
 export interface Message {
   role: "user" | "assistant";
@@ -13,18 +14,17 @@ interface ChatMessagesProps {
 const ChatMessages: React.FC<ChatMessagesProps> = ({ messages, isLoading }) => (
   <div className="flex flex-col gap-3 px-4 py-4 overflow-y-auto">
     {messages.map((message, idx) => (
-      <div>
-        { message.text && (
+      <div key={idx}>
+        {message.text && (
           <div
-            key={idx}
             className={`w-fit rounded-2xl px-4 py-2 whitespace-pre-wrap break-words text-sm shadow-sm ${
               message.role === "user"
                 ? "bg-blue-100 self-end text-right"
                 : "bg-gray-100 self-start text-left"
             }`}
           >
-          { message.text }
-        </div>
+            <ReactMarkdown>{message.text}</ReactMarkdown>
+          </div>
         )}
       </div>
     ))}
