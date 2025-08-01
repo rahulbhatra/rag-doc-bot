@@ -6,22 +6,32 @@ import { FiSend } from "react-icons/fi";
 import { useUploadDocument } from "../hooks/useUploadDocument";
 
 interface ChatInputProps {
-  onSend: (text: string) => void;
+  sessionId: number | null;
+  onSend: (text: string, sessionId: number | null) => void;
   onStop: () => void;
   isLoading: boolean;
 }
 
-const ChatInput: React.FC<ChatInputProps> = ({ onSend, onStop, isLoading }) => {
+const ChatInput: React.FC<ChatInputProps> = ({
+  sessionId,
+  onSend,
+  onStop,
+  isLoading,
+}) => {
   const [text, setText] = useState("");
   const [files, setFiles] = useState<string[]>([]);
   const abortRef = useRef<AbortController | null>(null);
 
-  const { mutate: uploadDocument, isPending: isUploadPending, data } = useUploadDocument();
+  const {
+    mutate: uploadDocument,
+    isPending: isUploadPending,
+    data,
+  } = useUploadDocument();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!text.trim()) return;
-    onSend(text.trim());
+    onSend(text.trim(), sessionId);
     setText("");
   };
 
@@ -107,7 +117,10 @@ const ChatInput: React.FC<ChatInputProps> = ({ onSend, onStop, isLoading }) => {
         )}
         {/* Upload Button */}
         <div className="flex items-center justify-center">
-          <UploadButton fetchFiles={fetchFiles} uploadDocument={uploadDocument} />
+          <UploadButton
+            fetchFiles={fetchFiles}
+            uploadDocument={uploadDocument}
+          />
         </div>
       </div>
     </form>

@@ -1,28 +1,19 @@
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import ChatInput from "./components/ChatInput";
 import ChatMessages, { type Message } from "./components/ChatMessages";
 import { useChatQuery } from "./hooks/useChatQuery";
 import {
   useAddMessageToSession,
-  useCreateSession,
   useSessionMessages,
 } from "./hooks/useChatSessions";
-import SessionList from "./components/SessionList";
+import Sidebar from "./components/Sidebar";
+import ragBotLogo from "./assets/rag-doc-bot.png";
 
 const App: React.FC = () => {
   const [sessionId, setSessionId] = useState<number | null>(null);
-  const { mutate: createSession } = useCreateSession();
-
-  useEffect(() => {
-    if (!sessionId) {
-      // createSession(undefined, {
-      //   onSuccess: (data) => setSessionId(data.id),
-      // });
-    }
-  }, [createSession, sessionId]);
 
   const { data: sessionMessages = [] } = useSessionMessages(sessionId);
-  const { mutate: addMessage } = useAddMessageToSession(sessionId);
+  const { mutate: addMessage } = useAddMessageToSession();
   const [streamingMessage, setStreamingMessage] = useState<Message | null>(
     null,
   );
@@ -34,20 +25,22 @@ const App: React.FC = () => {
         role: "assistant" as const,
         text: (prev?.text ?? "") + chunk,
         timestamp: new Date().toISOString(),
+        session_id: null,
       };
       streamingMessageRef.current = updated;
       return updated;
     });
   });
 
-  const sendMessage = (question: string) => {
+  const sendMessage = (question: string, sessionId: number | null) => {
     const userMessage: Message = {
+      session_id: sessionId,
       role: "user",
       text: question,
       timestamp: new Date().toISOString(),
     };
 
-    addMessage(userMessage);
+    addMessage({ sessionId, message: userMessage });
 
     sendQuery(
       { sessionId, question },
@@ -58,8 +51,9 @@ const App: React.FC = () => {
             role: "assistant",
             text: `❌ ${"Some issue"}`,
             timestamp: new Date().toISOString(),
+            session_id: null,
           };
-          await addMessage(finalMsg ?? errorMsg);
+          await addMessage({ sessionId, message: finalMsg ?? errorMsg });
           streamingMessageRef.current = null;
           setStreamingMessage(null);
         },
@@ -68,8 +62,9 @@ const App: React.FC = () => {
             role: "assistant",
             text: `❌ ${err.message}`,
             timestamp: new Date().toISOString(),
+            session_id: null,
           };
-          await addMessage(errorMsg);
+          await addMessage({ sessionId, message: errorMsg });
           setStreamingMessage(null);
         },
         onSettled: () => {},
@@ -83,11 +78,15 @@ const App: React.FC = () => {
         <div className="mx-auto px-3 py-1 flex items-center justify-between">
           {/* Logo and Brand */}
           <div className="flex items-center gap-3">
-            <div className="bg-blue-200 text-white rounded-full p-2 text-lg font-bold">
-              ⚡
+            <div className="bg-blue-200 text-white text-lg font-bold">
+              <img
+                src={ragBotLogo}
+                alt="RAG Doc Bot Logo"
+                className="h-10 w-auto"
+              />
             </div>
-            <span className="text-l font-semibold text-gray-600 tracking-tight">
-              Smart Document Assistant
+            <span className="text-l font-extrabold text-gay-600 tracking-wide drop-shadow-sm animate-pulse">
+              DragonAssist
             </span>
           </div>
 
@@ -112,7 +111,7 @@ const App: React.FC = () => {
       </header>
       <main className="flex-1 flex flex-row">
         <div className="w-full sm:w-[30%] md:w-[20%] lg:w-[10%] h-[calc(100vh-100px)] overflow-y-auto border-r border-gray-200">
-          <SessionList
+          <Sidebar
             selectedSessionId={sessionId}
             setSelectedSessionId={setSessionId}
           />
@@ -129,6 +128,7 @@ const App: React.FC = () => {
           </div>
           <div className="sticky bottom-0 w-full bg-gray-50 z-40 flex-shrink-0">
             <ChatInput
+              sessionId={sessionId}
               onSend={sendMessage}
               onStop={() => {}}
               isLoading={isLoading}

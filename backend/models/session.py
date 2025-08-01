@@ -7,4 +7,4 @@ class Session(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     title: Optional[str] = None
     created_at: datetime = Field(default_factory=datetime.utcnow)
-    messages: List["Message"] = Relationship(back_populates="session")
+    messages: List["Message"] = Relationship(back_populates="session", cascade_delete=True)

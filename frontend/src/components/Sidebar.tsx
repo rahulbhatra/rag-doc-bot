@@ -1,8 +1,13 @@
-import { useChatSessions } from "../hooks/useChatSessions";
+import {
+  useChatSessions,
+  useCreateSession,
+  useDeleteSession,
+} from "../hooks/useChatSessions";
 import { HiOutlinePencilAlt } from "react-icons/hi";
+import { MdDeleteOutline } from "react-icons/md";
 import React from "react";
 
-const SessionList = ({
+const Sidebar = ({
   selectedSessionId,
   setSelectedSessionId,
 }: {
@@ -10,6 +15,16 @@ const SessionList = ({
   setSelectedSessionId: React.Dispatch<React.SetStateAction<number | null>>;
 }) => {
   const { data: sessions, isLoading, error } = useChatSessions();
+  const { mutate: deleteSessionMutation } = useDeleteSession();
+  const { mutate: createSession } = useCreateSession();
+
+  const handleCreateSession = () => {
+    createSession("", {
+      onSuccess: (session) => {
+        setSelectedSessionId(session.id);
+      },
+    });
+  };
 
   if (isLoading) {
     return (
@@ -33,7 +48,7 @@ const SessionList = ({
       aria-label="Session list"
     >
       <button
-        onClick={() => {}}
+        onClick={handleCreateSession}
         className="w-full px-1 py-2 text-left text-sm font-lg text-black-600 hover:bg-gray-100 flex"
       >
         <HiOutlinePencilAlt size={20} /> New chat
@@ -66,7 +81,18 @@ const SessionList = ({
                 aria-current={isSelected ? "true" : "false"}
                 aria-selected={isSelected}
               >
-                {displayName}
+                <div className="flex flex-row justify-between">
+                  {displayName}
+                  <button
+                    className="transition-colors duration-150 hover:bg-gray-500"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      deleteSessionMutation(sessionId);
+                    }}
+                  >
+                    <MdDeleteOutline size={20} />
+                  </button>
+                </div>
               </li>
             );
           })}
@@ -76,4 +102,4 @@ const SessionList = ({
   );
 };
 
-export default SessionList;
+export default Sidebar;

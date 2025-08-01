@@ -6,7 +6,7 @@ from typing import List, Optional
 class Message(SQLModel, table=True):
     __tablename__ = "message"
     id: Optional[int] = Field(default=None, primary_key=True)
-    session_id: int = Field(foreign_key="session.id")
+    session_id: int = Field(foreign_key="session.id", ondelete="CASCADE")
     role: str
     text: str
     timestamp: datetime = Field(default_factory=datetime.utcnow)

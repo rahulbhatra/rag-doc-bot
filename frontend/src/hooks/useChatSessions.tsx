@@ -29,6 +29,20 @@ export const useCreateSession = () => {
         body: title ? JSON.stringify({ title }) : null,
       });
       if (!res.ok) throw new Error("Failed to create session");
+      return await res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["chatSessions"] });
+    },
+  });
+};
+
+export const useDeleteSession = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (sessionId: number) => {
+      const res = await fetch(`/sessions/${sessionId}`, { method: "DELETE" });
+      if (!res.ok) throw new Error("Delete session failed");
       return res.json();
     },
     onSuccess: () => {
@@ -49,10 +63,16 @@ export const useSessionMessages = (sessionId: number | null) => {
   });
 };
 
-export const useAddMessageToSession = (sessionId: number | null) => {
+export const useAddMessageToSession = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (message: Message) => {
+    mutationFn: async ({
+      sessionId,
+      message,
+    }: {
+      sessionId: number | null;
+      message: Message;
+    }) => {
       const res = await fetch(`/sessions/${sessionId}/messages`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -64,8 +84,10 @@ export const useAddMessageToSession = (sessionId: number | null) => {
       if (!res.ok) throw new Error("Failed to send message");
       return res.json();
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["sessionMessages", sessionId]});
+    onSuccess: (_, { sessionId }) => {
+      queryClient.invalidateQueries({
+        queryKey: ["sessionMessages", sessionId],
+      });
     },
   });
 };

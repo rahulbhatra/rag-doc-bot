@@ -1,5 +1,5 @@
 from datetime import datetime
-from fastapi import APIRouter, FastAPI, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from typing import List, Optional
 from sqlmodel import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -59,3 +59,12 @@ async def list_messages(session_id: int, db: AsyncSession = Depends(get_session)
 async def list_sessions(db: AsyncSession = Depends(get_session)):
     result = await db.execute(select(Session))
     return result.scalars().all()
+
+@router.delete("/{session_id}", response_model=dict)
+async def delete_session(session_id: int, db: AsyncSession = Depends(get_session)):
+    session = await db.get(Session, session_id)
+    if not session:
+        raise HTTPException(status_code=404, detail="Session not found")
+    await db.delete(session)
+    await db.commit()
+    return {"ok": True, "deleted_session_id": session_id}
