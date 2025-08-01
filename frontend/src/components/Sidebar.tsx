@@ -44,7 +44,7 @@ const Sidebar = ({
 
   return (
     <aside
-      className="h-screen border-r border-gray-200 bg-gray-50 p-4"
+      className="h-screen border-r border-gray-200 bg-gray-50 p-2"
       aria-label="Session list"
     >
       <button
@@ -72,7 +72,7 @@ const Sidebar = ({
                 onKeyDown={(e) => {
                   if (e.key === "Enter") setSelectedSessionId(sessionId);
                 }}
-                className={`px-1 py-1 text-sm rounded cursor-pointer truncate transition-colors duration-150 ${
+                className={`px-2 py-2 text-sm rounded cursor-pointer truncate transition-colors duration-150 ${
                   isSelected
                     ? "bg-blue-100 text-blue-700 font-medium"
                     : "hover:bg-gray-200"
@@ -84,7 +84,7 @@ const Sidebar = ({
                 <div className="flex flex-row justify-between">
                   {displayName}
                   <button
-                    className="transition-colors duration-150 hover:bg-gray-500"
+                    className="transition-colors duration-150 hover:bg-gray-500 rounded"
                     onClick={(e) => {
                       e.stopPropagation();
                       deleteSessionMutation(sessionId);

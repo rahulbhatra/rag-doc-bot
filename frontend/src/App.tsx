@@ -74,7 +74,7 @@ const App: React.FC = () => {
 
   return (
     <div className="flex flex-col min-h-screen">
-      <header className="sticky top-0 z-50 bg-gray-50 shadow-sm border-b">
+      <header className="sticky top-0 z-50 bg-gray-50 shadow-sm">
         <div className="mx-auto px-3 py-1 flex items-center justify-between">
           {/* Logo and Brand */}
           <div className="flex items-center gap-3">
@@ -110,13 +110,13 @@ const App: React.FC = () => {
         </div>
       </header>
       <main className="flex-1 flex flex-row">
-        <div className="w-full sm:w-[30%] md:w-[20%] lg:w-[10%] h-[calc(100vh-100px)] overflow-y-auto border-r border-gray-200">
+        <div className="w-full sm:w-[30%] md:w-[20%] lg:w-[15%] h-[calc(100vh-85px)] overflow-y-auto border-r border-gray-200">
           <Sidebar
             selectedSessionId={sessionId}
             setSelectedSessionId={setSessionId}
           />
         </div>
-        <div className="flex-1 flex flex-col overflow-hidden h-[calc(100vh-100px)] relative">
+        <div className="flex-1 flex flex-col overflow-hidden h-[calc(100vh-90px)] relative">
           <div className="flex-1 overflow-y-auto pb-4">
             <ChatMessages
               messages={[
@@ -136,7 +136,7 @@ const App: React.FC = () => {
           </div>
         </div>
       </main>
-      <footer className="sticky bottom-0 z-50 bg-gray-50 text-center text-sm text-gray-500 py-2 border-t">
+      <footer className="sticky bottom-0 z-50 bg-gray-50 text-center text-sm text-gray-500 py-2">
         Built with ❤️ using FastAPI, Ollama, and React
       </footer>
     </div>
