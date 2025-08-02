@@ -49,25 +49,27 @@ const Sidebar = ({
 
   return (
     <aside
-      className="h-screen border-r border-gray-200 bg-gray-50 p-2"
+      className="h-screen border-r border-gray-200 bg-gray-50 px-2"
       aria-label="Session list"
     >
-      <button
-        onClick={() => {
-          setSidebarOpen((prev) => !prev);
-        }}
-        className="w-full px-1 py-2 text-left text-sm font-lg text-black-600 hover:bg-gray-100 flex"
-      >
-        <FaBars size={20} />
-      </button>
+      <div className="sticky top-0 z-50 bg-gray-50">
+        <button
+          onClick={() => {
+            setSidebarOpen((prev) => !prev);
+          }}
+          className="w-full px-1 py-2 text-left text-sm font-lg text-black-600 hover:bg-gray-100 flex"
+        >
+          <FaBars size={20} />
+        </button>
+        <button
+          onClick={handleCreateSession}
+          className="w-full px-1 py-2 text-left text-sm font-lg text-black-600 hover:bg-gray-100 flex"
+        >
+          <HiOutlinePencilAlt size={20} /> {sidebarOpen && "New chat"}
+        </button>
+      </div>
       {sidebarOpen && (
         <div>
-          <button
-            onClick={handleCreateSession}
-            className="w-full px-1 py-2 text-left text-sm font-lg text-black-600 hover:bg-gray-100 flex"
-          >
-            <HiOutlinePencilAlt size={20} /> New chat
-          </button>
           <div className="px-1 py-1 text-sm text-gray-600 rounded"> Chats </div>
           {sessions?.length === 0 ? (
             <div className="text-sm text-gray-500 italic">
