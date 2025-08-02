@@ -18,7 +18,7 @@ def store_embeddings_in_chroma(chunks: List[str], embeddings: List[List[float]],
 
     documents = chunks
     metadatas = [{"doc_id": doc_id, "chunk_index": i, "session_id": session_id} for i in range(len(chunks))]
-    ids = [f"{doc_id}_{i}" for i in range(len(chunks))]
+    ids = [f"{session_id}_{doc_id}_{i}" for i in range(len(chunks))]
 
     collection.add(
         documents=documents,
