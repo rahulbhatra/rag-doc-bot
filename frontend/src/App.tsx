@@ -112,7 +112,7 @@ const App: React.FC = () => {
       </header>
       <main className="flex-1 flex flex-row">
         <div
-          className={`transition-all duration-300 ease-in-out h-[calc(100vh-85px)] overflow-y-auto border-r border-gray-200 ${sidebarOpen ? `sm:w-[30%] md:w-[20%] lg:w-[15%]` : `w-[60px]`}`}
+          className={`transition-all duration-300 ease-in-out h-[calc(100vh-85px)] overflow-y-auto border-t border-r border-gray-200 ${sidebarOpen ? `sm:w-[30%] md:w-[20%] lg:w-[15%]` : `w-[60px]`}`}
         >
           <Sidebar
             selectedSessionId={sessionId}
