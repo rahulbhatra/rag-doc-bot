@@ -11,6 +11,7 @@ import ragBotLogo from "./assets/rag-doc-bot.png";
 
 const App: React.FC = () => {
   const [sessionId, setSessionId] = useState<number | null>(null);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
 
   const { data: sessionMessages = [] } = useSessionMessages(sessionId);
   const { mutate: addMessage } = useAddMessageToSession();
@@ -110,10 +111,14 @@ const App: React.FC = () => {
         </div>
       </header>
       <main className="flex-1 flex flex-row">
-        <div className="w-full sm:w-[30%] md:w-[20%] lg:w-[15%] h-[calc(100vh-85px)] overflow-y-auto border-r border-gray-200">
+        <div
+          className={`transition-all duration-300 ease-in-out h-[calc(100vh-85px)] overflow-y-auto border-r border-gray-200 ${sidebarOpen ? `sm:w-[30%] md:w-[20%] lg:w-[15%]` : `w-[60px]`}`}
+        >
           <Sidebar
             selectedSessionId={sessionId}
             setSelectedSessionId={setSessionId}
+            sidebarOpen={sidebarOpen}
+            setSidebarOpen={setSidebarOpen}
           />
         </div>
         <div className="flex-1 flex flex-col overflow-hidden h-[calc(100vh-85px)] relative">
