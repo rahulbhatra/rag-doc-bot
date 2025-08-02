@@ -1,19 +1,17 @@
-from datetime import datetime
+from backend.models.message import Message
 from typing import List, Optional
-from fastapi import FastAPI, Form, HTTPException, Query
+from fastapi import Depends, FastAPI
 from pydantic import BaseModel
-from backend.database.psql import init_db
-from backend.ingestion.retrival import chunk_text, retrieve_top_k
-from backend.utils.fileUtils import extract_text_from_file
-from backend.ingestion.ingestion import embed_chunks, store_embeddings_in_chroma
+from backend.database.psql import get_session, init_db
+from backend.ingestion.retrival import retrieve_top_k
 from backend.llm.llm import ask_ollama
 from backend.fastapi.session import router as session_router
-from fastapi import UploadFile, File
-import os
-import shutil
+from backend.fastapi.document import router as document_router
 from fastapi.responses import StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
 import json
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
 
 app = FastAPI(on_startup=[init_db])
 
@@ -34,11 +32,24 @@ class QueryResponse(BaseModel):
     answer: str
     chunks: Optional[List[dict]] = None  # includes text, metadata, distance
 
+async def get_recent_messages(session: AsyncSession, session_id: int, limit: int = 100):
+    result = await session.execute(
+        select(Message).where(Message.session_id == session_id).order_by(Message.timestamp.desc()).limit(limit)
+    )
+    messages = result.scalars().all()
+    return list(reversed(messages))
+
 @app.post("/query", response_model=QueryResponse)
-async def query_endpoint(req: QueryRequest):
+async def query_endpoint(req: QueryRequest, db: AsyncSession = Depends(get_session)):
     question = req.question
     session_id = req.session_id
     top_k = req.top_k
+
+    # Retrieve chat history
+    recent_msgs = await get_recent_messages(db, session_id)
+
+    # Convert history to string
+    chat_history = "\n".join([f"{msg.role.capitalize()}: {msg.text}" for msg in recent_msgs])
 
     # Step 1: Retrieve relevant context chunks
     docs = retrieve_top_k(question, session_id, top_k)
@@ -55,74 +66,5 @@ async def query_endpoint(req: QueryRequest):
 
     return StreamingResponse(stream(), media_type="text/event-stream")
 
-UPLOAD_DIR = "uploaded_docs"
-os.makedirs(UPLOAD_DIR, exist_ok=True)
-
-@app.post("/upload")
-async def upload_and_ingest(session_id: int = Form(...), file: UploadFile = File(...)):
-    try:
-        upload_dir = os.path.join(UPLOAD_DIR, str(session_id))
-        os.makedirs(upload_dir, exist_ok=True)
-
-        file_path = os.path.join(f"{UPLOAD_DIR}/{session_id}", file.filename)
-
-        # 1. Save uploaded file
-        contents = await file.read()
-        with open(file_path, "wb") as f:
-            f.write(contents)
-
-        print(f"Saved file to {file_path}")
-
-        # 2. Extract text (supports .pdf, .txt, .docx)
-        text = extract_text_from_file(file_path)
-        if not text.strip():
-            raise HTTPException(status_code=400, detail="Could not extract text from document.")
-        
-        print("Text extraction successful")
-
-        # 3. Chunk the text
-        chunks = chunk_text(text)
-        print(f"Chunked into {len(chunks)} pieces")
-
-        # 4. Generate embeddings
-        vectors = embed_chunks(chunks)
-        print("Embeddings generated")
-
-        # 5. Store embeddings
-        store_embeddings_in_chroma(chunks, vectors, file.filename, session_id)
-        print("Embeddings stored")
-
-        return {"status": "success", "filename": file.filename, "session_id":  session_id, "chunks": len(chunks)}
-
-    except Exception as e:
-        print(e.with_traceback)
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-
-@app.get("/upload")
-def list_uploaded_files(session_id: int = Query(...)):
-    session_dir = os.path.join(UPLOAD_DIR, str(session_id))
-    if not os.path.exists(session_dir):
-        return {"files": []}
-
-    files = []
-    for fname in os.listdir(session_dir):
-        fpath = os.path.join(session_dir, fname)
-        files.append({
-            "filename": fname,
-            "size": os.path.getsize(fpath),
-            "uploaded_at": datetime.fromtimestamp(os.path.getmtime(fpath)).isoformat(),
-        })
-
-    return {"files": files}
-
-@app.delete("/upload")
-def delete_file(session_id: int = Query(...), filename: str = Query(...)):
-    path = os.path.join(UPLOAD_DIR, str(session_id), filename)
-    if os.path.exists(path):
-        os.remove(path)
-        return {"status": "deleted"}
-    return {"error": "File not found"}
-
 app.include_router(session_router)
+app.include_router(document_router)
