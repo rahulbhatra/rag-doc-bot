@@ -1,0 +1,76 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  backend:
+    name: Backend tests (Python + FastAPI)
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [3.10]
+
+    services:
+      postgres:
+        image: postgres:15
+        ports: ["5432:5432"]
+        env:
+          POSTGRES_USER: rahul
+          POSTGRES_PASSWORD: 1234
+          POSTGRES_DB: ragbot
+        options: >-
+          --health-cmd="pg_isready -U rahul"
+          --health-interval=10s
+          --health-timeout=60s
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+
+      - name: Install backend dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r backend/requirements.txt
+
+      - name: Run Alembic migrations
+        run: |
+          alembic upgrade head
+        working-directory: backend
+
+      - name: Run pytest
+        run: |
+          pytest backend/tests --junitxml=backend-test-reports/junit.xml
+        working-directory: backend
+
+  frontend:
+    name: Frontend tests (React)
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [18.x]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: yarn
+
+      - name: Install & test frontend
+        run: |
+          yarn install
+          CI=true yarn test
+        working-directory: frontend
