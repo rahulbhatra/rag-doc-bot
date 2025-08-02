@@ -4,6 +4,7 @@ import ChatMessages, { type Message } from "./components/ChatMessages";
 import { useChatQuery } from "./hooks/useChatQuery";
 import {
   useAddMessageToSession,
+  useCreateSession,
   useSessionMessages,
 } from "./hooks/useChatSessions";
 import Sidebar from "./components/Sidebar";
@@ -15,6 +16,8 @@ const App: React.FC = () => {
 
   const { data: sessionMessages = [] } = useSessionMessages(sessionId);
   const { mutate: addMessage } = useAddMessageToSession();
+  const { mutate: createSession } = useCreateSession();
+
   // Manage streaming messages per session
   const [streamingMessages, setStreamingMessages] = useState<
     Record<number, Message | null>
@@ -38,7 +41,20 @@ const App: React.FC = () => {
     },
   );
 
-  const sendMessage = (question: string, sessionId: number | null) => {
+  const sendMessage = async (question: string, sessionId: number | null) => {
+    // If no session Id chosen by user start a new session and then query message
+    if (!sessionId) {
+      console.log("No session found trying to create new one.");
+      const session = await new Promise<number>((resolve) => {
+        const titleLen = Math.min(20, question.length);
+        createSession(question.substring(0, titleLen), {
+          onSuccess: (session) => resolve(session.id),
+        });
+      });
+      sessionId = session;
+      setSessionId(sessionId);
+    }
+
     const userMessage: Message = {
       session_id: sessionId,
       role: "user",
