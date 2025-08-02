@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import UploadButton from "./UploadButton";
 import Files from "./Files";
 import { FaSpinner, FaCheckCircle, FaStop } from "react-icons/fa";
@@ -24,12 +24,24 @@ const ChatInput: React.FC<ChatInputProps> = ({
   const [text, setText] = useState("");
   const { data: files = [] } = useSessionDocuments(sessionId);
   const abortRef = useRef<AbortController | null>(null);
+  const [uploadedChunkMessage, setUploadedChunkMessage] = useState<
+    string | null
+  >(null);
 
   const {
     mutate: uploadDocument,
     isPending: isUploadPending,
     data,
   } = useUploadDocument();
+
+  useEffect(() => {
+    if (data?.chunks) {
+      const text = `${data.chunks} chunks extracted`;
+      setUploadedChunkMessage(text);
+      const timeout = setTimeout(() => setUploadedChunkMessage(null), 3000); // hide after 3 seconds
+      return () => clearTimeout(timeout); // cleanup
+    }
+  }, [data]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -58,10 +70,10 @@ const ChatInput: React.FC<ChatInputProps> = ({
           </div>
         )}
 
-        {data && (
+        {uploadedChunkMessage && (
           <div className="flex items-center gap-2 text-green-600 text-sm">
             <FaCheckCircle />
-            <span>{data.chunks} chunks extracted</span>
+            <span>{uploadedChunkMessage}</span>
           </div>
         )}
       </div>
