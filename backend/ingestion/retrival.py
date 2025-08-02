@@ -17,13 +17,14 @@ def embed_query(query: str, model_name: str = MODEL_NAME):
     embedding = model.encode([query])[0]
     return embedding.tolist()
 
-def retrieve_top_k(query: str, top_k: int = 3):
+def retrieve_top_k(query: str, session_id: int, top_k: int = 3):
     collection = get_chroma_collection()
     query_embedding = embed_query(query)
     results = collection.query(
         query_embeddings=[query_embedding],
         n_results=top_k,
-        include=["documents", "metadatas", "distances"]
+        include=["documents", "metadatas", "distances"],
+        where={"session_id": session_id}
     )
     # results is a dict of lists-of-lists; since we passed one query, use index 0
     docs = results["documents"][0]
@@ -57,6 +58,6 @@ def chunk_text(text: str, chunk_size: int = 500, overlap: int = 50) -> List[str]
 
 if __name__ == "__main__":
     query = "What is vector search?"
-    hits = retrieve_top_k(query, top_k=1)
+    hits = retrieve_top_k(query, 0, top_k=1)
     for doc, meta, dist in hits:
         print(f"Doc chunk: {doc[:80]}… | meta={meta} | distance={dist:.4f}")

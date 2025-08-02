@@ -2,11 +2,9 @@ import type { UseMutateFunction } from "@tanstack/react-query";
 
 export default function UploadButton({
   sessionId,
-  fetchFiles,
   uploadDocument,
 }: {
   sessionId: number | null;
-  fetchFiles: () => void;
   uploadDocument: UseMutateFunction<
     unknown,
     Error,
@@ -21,7 +19,6 @@ export default function UploadButton({
     const file = e.target.files?.[0];
     if (!file) return;
     await uploadDocument({ sessionId, file });
-    fetchFiles();
   };
 
   return (

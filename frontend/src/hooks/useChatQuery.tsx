@@ -2,11 +2,17 @@ import { useMutation } from "@tanstack/react-query";
 
 export const useChatQuery = (onChunk?: (chunk: string) => void) => {
   return useMutation({
-    mutationFn: async ({ sessionId, question }: { sessionId: number | null; question: string }) => {
-      const res = await fetch(`/query?session_id=${sessionId}`, {
+    mutationFn: async ({
+      sessionId,
+      question,
+    }: {
+      sessionId: number | null;
+      question: string;
+    }) => {
+      const res = await fetch(`/query`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ question }),
+        body: JSON.stringify({ question, session_id: sessionId, top_k: 5 }),
       });
 
       if (!res.ok || !res.body) {

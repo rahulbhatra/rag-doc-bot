@@ -27,6 +27,7 @@ app.add_middleware(
 
 class QueryRequest(BaseModel):
     question: str
+    session_id: int
     top_k: int = 3
 
 class QueryResponse(BaseModel):
@@ -36,9 +37,11 @@ class QueryResponse(BaseModel):
 @app.post("/query", response_model=QueryResponse)
 async def query_endpoint(req: QueryRequest):
     question = req.question
+    session_id = req.session_id
+    top_k = req.top_k
 
     # Step 1: Retrieve relevant context chunks
-    docs = retrieve_top_k(question, top_k=3)
+    docs = retrieve_top_k(question, session_id, top_k)
     context = "\n".join([doc[0] for doc in docs])
 
     # Step 2: Build prompt
@@ -85,7 +88,7 @@ async def upload_and_ingest(session_id: int = Form(...), file: UploadFile = File
         print("Embeddings generated")
 
         # 5. Store embeddings
-        store_embeddings_in_chroma(chunks, vectors, file.filename)
+        store_embeddings_in_chroma(chunks, vectors, file.filename, session_id)
         print("Embeddings stored")
 
         return {"status": "success", "filename": file.filename, "session_id":  session_id, "chunks": len(chunks)}

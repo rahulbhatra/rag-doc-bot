@@ -1,9 +1,12 @@
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import UploadButton from "./UploadButton";
 import Files from "./Files";
 import { FaSpinner, FaCheckCircle, FaStop } from "react-icons/fa";
 import { FiSend } from "react-icons/fi";
-import { useUploadDocument } from "../hooks/useUploadDocument";
+import {
+  useUploadDocument,
+  useSessionDocuments,
+} from "../hooks/useChatSessionDocuments";
 
 interface ChatInputProps {
   sessionId: number | null;
@@ -19,7 +22,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
   isLoading,
 }) => {
   const [text, setText] = useState("");
-  const [files, setFiles] = useState<string[]>([]);
+  const { data: files = [] } = useSessionDocuments(sessionId);
   const abortRef = useRef<AbortController | null>(null);
 
   const {
@@ -35,35 +38,12 @@ const ChatInput: React.FC<ChatInputProps> = ({
     setText("");
   };
 
-  const fetchFiles = async () => {
-    try {
-      const res = await fetch(`/upload?session_id=${sessionId}`);
-      const data = await res.json();
-      setFiles(data.files || []);
-    } catch (err) {
-      console.error("Failed to fetch files:", err);
-    }
-  };
-
-  const handleDelete = async (filename: string) => {
-    try {
-      await fetch(`/upload/${filename}`, { method: "DELETE" });
-      fetchFiles();
-    } catch (err) {
-      console.error("Delete failed:", err);
-    }
-  };
-
   const handleStop = () => {
     if (abortRef.current) {
       abortRef.current.abort();
       onStop();
     }
   };
-
-  useEffect(() => {
-    fetchFiles();
-  }, []);
 
   return (
     <form
@@ -87,7 +67,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
       </div>
 
       {/* Uploaded Files List */}
-      <Files files={files} onDelete={handleDelete} />
+      <Files sessionId={sessionId} files={files} />
 
       {/* Input + Send */}
       <div className="flex flex-col md:flex-row gap-2 w-full">
@@ -117,11 +97,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
         )}
         {/* Upload Button */}
         <div className="flex items-center justify-center">
-          <UploadButton
-            sessionId={sessionId}
-            fetchFiles={fetchFiles}
-            uploadDocument={uploadDocument}
-          />
+          <UploadButton sessionId={sessionId} uploadDocument={uploadDocument} />
         </div>
       </div>
     </form>

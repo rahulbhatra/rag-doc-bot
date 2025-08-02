@@ -11,13 +11,13 @@ def embed_chunks(chunks: List[str], model_name: str = "all-MiniLM-L6-v2") -> Lis
     model = SentenceTransformer(model_name)
     return model.encode(chunks, show_progress_bar=True).tolist()
 
-def store_embeddings_in_chroma(chunks: List[str], embeddings: List[List[float]], doc_id: str):
+def store_embeddings_in_chroma(chunks: List[str], embeddings: List[List[float]], doc_id: str, session_id: int):
     client = chromadb.PersistentClient(path="chroma_db")
     # client = chromadb.Client(Settings(chroma_db_impl="duckdb+parquet", persist_directory="chroma_db"))
     collection = client.get_or_create_collection(name="docs")
 
     documents = chunks
-    metadatas = [{"doc_id": doc_id, "chunk_index": i} for i in range(len(chunks))]
+    metadatas = [{"doc_id": doc_id, "chunk_index": i, "session_id": session_id} for i in range(len(chunks))]
     ids = [f"{doc_id}_{i}" for i in range(len(chunks))]
 
     collection.add(
