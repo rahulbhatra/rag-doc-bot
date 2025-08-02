@@ -1,11 +1,26 @@
 import type { UseMutateFunction } from "@tanstack/react-query";
 
-export default function UploadButton({ fetchFiles, uploadDocument }: { fetchFiles: () => void, uploadDocument: UseMutateFunction<unknown, Error, File, unknown> }) {
+export default function UploadButton({
+  sessionId,
+  fetchFiles,
+  uploadDocument,
+}: {
+  sessionId: number | null;
+  fetchFiles: () => void;
+  uploadDocument: UseMutateFunction<
+    unknown,
+    Error,
+    {
+      sessionId: number | null;
+      file: File;
+    },
+    unknown
+  >;
+}) {
   const handleChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-
-    await uploadDocument(file);
+    await uploadDocument({ sessionId, file });
     fetchFiles();
   };
 

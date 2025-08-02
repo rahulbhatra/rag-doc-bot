@@ -37,7 +37,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
 
   const fetchFiles = async () => {
     try {
-      const res = await fetch("/upload");
+      const res = await fetch(`/upload?session_id=${sessionId}`);
       const data = await res.json();
       setFiles(data.files || []);
     } catch (err) {
@@ -118,6 +118,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
         {/* Upload Button */}
         <div className="flex items-center justify-center">
           <UploadButton
+            sessionId={sessionId}
             fetchFiles={fetchFiles}
             uploadDocument={uploadDocument}
           />

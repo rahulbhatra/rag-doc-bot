@@ -1,5 +1,6 @@
+from datetime import datetime
 from typing import List, Optional
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, Form, HTTPException, Query
 from pydantic import BaseModel
 from backend.database.psql import init_db
 from backend.ingestion.retrival import chunk_text, retrieve_top_k
@@ -54,9 +55,12 @@ UPLOAD_DIR = "uploaded_docs"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 @app.post("/upload")
-async def upload_and_ingest(file: UploadFile = File(...)):
+async def upload_and_ingest(session_id: int = Form(...), file: UploadFile = File(...)):
     try:
-        file_path = os.path.join(UPLOAD_DIR, file.filename)
+        upload_dir = os.path.join(UPLOAD_DIR, str(session_id))
+        os.makedirs(upload_dir, exist_ok=True)
+
+        file_path = os.path.join(f"{UPLOAD_DIR}/{session_id}", file.filename)
 
         # 1. Save uploaded file
         contents = await file.read()
@@ -84,20 +88,34 @@ async def upload_and_ingest(file: UploadFile = File(...)):
         store_embeddings_in_chroma(chunks, vectors, file.filename)
         print("Embeddings stored")
 
-        return {"status": "success", "filename": file.filename, "chunks": len(chunks)}
+        return {"status": "success", "filename": file.filename, "session_id":  session_id, "chunks": len(chunks)}
 
     except Exception as e:
         print(e.with_traceback)
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@app.get("/upload")
-def list_uploaded_files():
-    return {"files": os.listdir(UPLOAD_DIR)}
 
-@app.delete("/upload/{filename}")
-def delete_file(filename: str):
-    path = os.path.join(UPLOAD_DIR, filename)
+@app.get("/upload")
+def list_uploaded_files(session_id: int = Query(...)):
+    session_dir = os.path.join(UPLOAD_DIR, str(session_id))
+    if not os.path.exists(session_dir):
+        return {"files": []}
+
+    files = []
+    for fname in os.listdir(session_dir):
+        fpath = os.path.join(session_dir, fname)
+        files.append({
+            "filename": fname,
+            "size": os.path.getsize(fpath),
+            "uploaded_at": datetime.fromtimestamp(os.path.getmtime(fpath)).isoformat(),
+        })
+
+    return {"files": files}
+
+@app.delete("/upload")
+def delete_file(session_id: int = Query(...), filename: str = Query(...)):
+    path = os.path.join(UPLOAD_DIR, str(session_id), filename)
     if os.path.exists(path):
         os.remove(path)
         return {"status": "deleted"}

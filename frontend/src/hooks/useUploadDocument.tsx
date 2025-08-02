@@ -1,10 +1,18 @@
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 export function useUploadDocument() {
+  const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (file: File) => {
+    mutationFn: async ({
+      sessionId,
+      file,
+    }: {
+      sessionId: number | null;
+      file: File;
+    }) => {
       const formData = new FormData();
       formData.append("file", file);
+      formData.append("session_id", sessionId?.toString() ?? "");
 
       const res = await fetch("/upload", {
         method: "POST",
@@ -17,6 +25,9 @@ export function useUploadDocument() {
       }
 
       return await res.json();
+    },
+    onSuccess: (_data, vars) => {
+      qc.invalidateQueries({ queryKey: ["documents", vars.sessionId] });
     },
   });
 }
