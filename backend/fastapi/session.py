@@ -57,7 +57,7 @@ async def list_messages(session_id: int, db: AsyncSession = Depends(get_session)
 
 @router.get("", response_model=List[Session])
 async def list_sessions(db: AsyncSession = Depends(get_session)):
-    result = await db.execute(select(Session))
+    result = await db.execute(select(Session).order_by(Session.created_at.desc()))
     return result.scalars().all()
 
 @router.delete("/{session_id}", response_model=dict)

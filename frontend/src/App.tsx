@@ -15,23 +15,28 @@ const App: React.FC = () => {
 
   const { data: sessionMessages = [] } = useSessionMessages(sessionId);
   const { mutate: addMessage } = useAddMessageToSession();
-  const [streamingMessage, setStreamingMessage] = useState<Message | null>(
-    null,
-  );
-  const streamingMessageRef = useRef<Message | null>(null);
+  // Manage streaming messages per session
+  const [streamingMessages, setStreamingMessages] = useState<
+    Record<number, Message | null>
+  >({});
+  const streamingMessageRefs = useRef<Record<number, Message | null>>({});
 
-  const { mutate: sendQuery, isPending: isLoading } = useChatQuery((chunk) => {
-    setStreamingMessage((prev) => {
-      const updated = {
-        role: "assistant" as const,
-        text: (prev?.text ?? "") + chunk,
-        timestamp: new Date().toISOString(),
-        session_id: null,
-      };
-      streamingMessageRef.current = updated;
-      return updated;
-    });
-  });
+  const { mutate: sendQuery, isPending: isLoading } = useChatQuery(
+    (chunk, sessionId) => {
+      if (sessionId == null) return;
+      setStreamingMessages((prev) => {
+        const prevMsg = prev[sessionId]?.text ?? "";
+        const updated: Message = {
+          role: "assistant",
+          text: prevMsg + chunk,
+          timestamp: new Date().toISOString(),
+          session_id: sessionId,
+        };
+        streamingMessageRefs.current[sessionId] = updated;
+        return { ...prev, [sessionId]: updated };
+      });
+    },
+  );
 
   const sendMessage = (question: string, sessionId: number | null) => {
     const userMessage: Message = {
@@ -41,13 +46,21 @@ const App: React.FC = () => {
       timestamp: new Date().toISOString(),
     };
 
+    // Just after send message click assigning to ref so loading state start to show up
+    streamingMessageRefs.current[sessionId ?? -1] = {
+      role: "assistant",
+      text: "",
+      timestamp: new Date().toISOString(),
+      session_id: sessionId,
+    };
+
     addMessage({ sessionId, message: userMessage });
 
     sendQuery(
       { sessionId, question },
       {
         onSuccess: async () => {
-          const finalMsg = streamingMessageRef.current;
+          const finalMsg = streamingMessageRefs.current[sessionId ?? -1];
           const errorMsg: Message = {
             role: "assistant",
             text: `❌ ${"Some issue"}`,
@@ -55,8 +68,11 @@ const App: React.FC = () => {
             session_id: null,
           };
           await addMessage({ sessionId, message: finalMsg ?? errorMsg });
-          streamingMessageRef.current = null;
-          setStreamingMessage(null);
+          delete streamingMessageRefs.current[sessionId ?? -1];
+          setStreamingMessages((prev) => ({
+            ...prev,
+            [sessionId ?? -1]: null,
+          }));
         },
         onError: async (err) => {
           const errorMsg: Message = {
@@ -66,7 +82,11 @@ const App: React.FC = () => {
             session_id: null,
           };
           await addMessage({ sessionId, message: errorMsg });
-          setStreamingMessage(null);
+          delete streamingMessageRefs.current[sessionId ?? -1];
+          setStreamingMessages((prev) => ({
+            ...prev,
+            [sessionId ?? -1]: null,
+          }));
         },
         onSettled: () => {},
       },
@@ -126,9 +146,14 @@ const App: React.FC = () => {
             <ChatMessages
               messages={[
                 ...sessionMessages,
-                ...(streamingMessage ? [streamingMessage] : []),
+                ...(streamingMessages[sessionId ?? -1]
+                  ? [streamingMessages[sessionId ?? -1]!]
+                  : []),
               ]}
-              isLoading={isLoading}
+              isLoading={
+                isLoading &&
+                Boolean(streamingMessageRefs.current[sessionId ?? -1])
+              }
             />
           </div>
           <div className="sticky bottom-0 w-full bg-gray-50 z-40 flex-shrink-0 px-4 pb-2">

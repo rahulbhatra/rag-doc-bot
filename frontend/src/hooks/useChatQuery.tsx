@@ -1,6 +1,8 @@
 import { useMutation } from "@tanstack/react-query";
 
-export const useChatQuery = (onChunk?: (chunk: string) => void) => {
+export const useChatQuery = (
+  onChunk?: (chunk: string, sessionId: number | null) => void,
+) => {
   return useMutation({
     mutationFn: async ({
       sessionId,
@@ -36,9 +38,9 @@ export const useChatQuery = (onChunk?: (chunk: string) => void) => {
             const jsonStr = part.replace(/^data:\s*/, "");
             try {
               const data = JSON.parse(jsonStr);
-              onChunk?.(data.answer ?? "");
+              onChunk?.(data.answer ?? "", sessionId);
             } catch {
-              onChunk?.(jsonStr); // fallback plain text
+              onChunk?.(jsonStr, sessionId); // fallback plain text
             }
           }
         }
