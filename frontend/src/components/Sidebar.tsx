@@ -70,7 +70,7 @@ const Sidebar = ({
       </div>
       {sidebarOpen && (
         <div>
-          <div className="px-1 py-1 text-sm text-gray-600 rounded"> Chats </div>
+          <div className="px-1 py-2 text-m text-gray-600 rounded"> Chats </div>
           {sessions?.length === 0 ? (
             <div className="text-sm text-gray-500 italic">
               No sessions yet. Start a conversation to see it here!
