@@ -67,10 +67,9 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node-version }}
-          cache: yarn
 
       - name: Install & test frontend
         run: |
-          yarn install
-          CI=true yarn test
+          npm install
+          CI=true npm test
         working-directory: frontend
