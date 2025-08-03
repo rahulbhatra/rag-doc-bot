@@ -49,7 +49,7 @@ jobs:
 
       - name: Run pytest
         run: |
-          pytest backend/tests --junitxml=backend-test-reports/junit.xml
+          pytest tests --junitxml=backend-test-reports/junit.xml
         working-directory: backend
 
   frontend:
