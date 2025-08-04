@@ -90,26 +90,31 @@ const ChatInput: React.FC<ChatInputProps> = ({
           value={text}
           onChange={(e) => setText(e.target.value)}
         />
-        {isLoading ? (
-          <button
-            type="button"
-            onClick={handleStop}
-            className="bg-gray-600 hover:bg-gray-700 text-white w-10 h-10 flex items-center justify-center rounded-full transition"
-          >
-            <FaStop className="w-4 h-4" />
-          </button>
-        ) : (
-          <button
-            type="submit"
-            disabled={isLoading}
-            className="bg-blue-600 text-white p-2 hover:bg-blue-700 disabled:opacity-100 w-10 h-10 flex items-center justify-center rounded-full transition"
-          >
-            <FiSend className="w-4 h-4" />
-          </button>
-        )}
-        {/* Upload Button */}
-        <div className="flex items-center justify-center">
-          <UploadButton sessionId={sessionId} uploadDocument={uploadDocument} />
+        <div className="flex justify-start gap-2">
+          {isLoading ? (
+            <button
+              type="button"
+              onClick={handleStop}
+              className="bg-gray-600 hover:bg-gray-700 text-white w-10 h-10 flex items-center justify-center rounded-full transition"
+            >
+              <FaStop className="w-4 h-4" />
+            </button>
+          ) : (
+            <button
+              type="submit"
+              disabled={isLoading}
+              className="bg-blue-600 text-white p-2 hover:bg-blue-700 disabled:opacity-100 w-10 h-10 flex items-center justify-center rounded-full transition"
+            >
+              <FiSend className="w-4 h-4" />
+            </button>
+          )}
+          {/* Upload Button */}
+          <div className="flex items-center justify-center">
+            <UploadButton
+              sessionId={sessionId}
+              uploadDocument={uploadDocument}
+            />
+          </div>
         </div>
       </div>
     </form>
