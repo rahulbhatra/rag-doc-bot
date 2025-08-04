@@ -68,3 +68,12 @@ async def delete_session(session_id: int, db: AsyncSession = Depends(get_session
     await db.delete(session)
     await db.commit()
     return {"ok": True, "deleted_session_id": session_id}
+
+@router.put("/{session_id}/rename", response_model=dict)
+async def rename_session(session_id: int, payload: dict, db: AsyncSession = Depends(get_session)):
+    db_session: Session = await db.get(Session, session_id)
+    if not db_session:
+        raise HTTPException(404)
+    db_session.title = payload["title"]
+    await db.commit()
+    return {"ok": True, "updated_session_id": session_id}

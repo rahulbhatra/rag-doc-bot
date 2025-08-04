@@ -10,7 +10,7 @@ export interface ChatSession {
 
 export const useChatSessions = () => {
   return useQuery<ChatSession[]>({
-    queryKey: ["chatSessions"],
+    queryKey: ["sessions"],
     queryFn: async () => {
       const res = await fetch("/sessions");
       if (!res.ok) throw new Error("Failed to fetch sessions");
@@ -32,7 +32,7 @@ export const useCreateSession = () => {
       return await res.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["chatSessions"] });
+      queryClient.invalidateQueries({ queryKey: ["sessions"] });
     },
   });
 };
@@ -46,7 +46,37 @@ export const useDeleteSession = () => {
       return res.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["chatSessions"] });
+      queryClient.invalidateQueries({ queryKey: ["sessions"] });
+    },
+  });
+};
+
+export const useRenameSession = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      sessionId,
+      newName,
+    }: {
+      sessionId: number;
+      newName: string;
+    }) => {
+      const res = await fetch(`/sessions/${sessionId}/rename`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title: newName }),
+      });
+
+      if (!res.ok) {
+        const error = await res.text();
+        throw new Error(`Failed to rename session: ${error}`);
+      }
+
+      return await res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["sessions"] });
     },
   });
 };
