@@ -45,7 +45,11 @@ const ChatInput: React.FC<ChatInputProps> = ({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!text.trim()) return;
+    if (isLoading || !text.trim()) return;
+
+    const controller = new AbortController();
+    abortRef.current = controller;
+
     onSend(text.trim(), sessionId);
     setText("");
   };
@@ -94,6 +98,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
           {isLoading ? (
             <button
               type="button"
+              aria-label="stop-button"
               onClick={handleStop}
               className="bg-gray-600 hover:bg-gray-700 text-white w-10 h-10 flex items-center justify-center rounded-full transition"
             >
@@ -102,6 +107,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
           ) : (
             <button
               type="submit"
+              aria-label="send-button"
               disabled={isLoading}
               className="bg-blue-600 text-white p-2 hover:bg-blue-700 disabled:opacity-100 w-10 h-10 flex items-center justify-center rounded-full transition"
             >

@@ -111,41 +111,7 @@ const App: React.FC = () => {
 
   return (
     <div className="flex flex-col min-h-screen">
-      <header className="sticky top-0 z-50 bg-gray-50 shadow-sm">
-        <div className="mx-auto px-3 py-1 flex items-center justify-between">
-          {/* Logo and Brand */}
-          <div className="flex items-center gap-3">
-            <div className="bg-blue-200 text-white text-lg font-bold">
-              <img
-                src={ragBotLogo}
-                alt="RAG Doc Bot Logo"
-                className="h-10 w-auto"
-              />
-            </div>
-            <span className="text-l font-extrabold text-gay-600 tracking-wide drop-shadow-sm animate-pulse">
-              DragonAssist
-            </span>
-          </div>
-
-          {/* Right-side Navigation (Optional - Replace or Extend) */}
-          <div className="hidden md:flex items-center gap-6 text-sm text-gray-600">
-            <a href="#chat" className="hover:text-blue-600 transition">
-              Chat
-            </a>
-            <a href="#upload" className="hover:text-blue-600 transition">
-              Documents
-            </a>
-            <a
-              href="https://github.com/rahulbhatra/rag-doc-bot"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hover:text-blue-600 transition"
-            >
-              GitHub
-            </a>
-          </div>
-        </div>
-      </header>
+      <Header />
       <main className="flex-1 flex flex-row">
         <div
           className={`transition-all duration-300 ease-in-out h-[calc(100vh-85px)] overflow-y-auto border-t border-r border-gray-200 ${sidebarOpen ? `sm:w-[30%] md:w-[20%] lg:w-[15%]` : `w-[60px]`}`}
@@ -160,6 +126,7 @@ const App: React.FC = () => {
         <div className="flex-1 flex flex-col overflow-hidden h-[calc(100vh-85px)] relative">
           <div className="flex-1 overflow-y-auto pb-4">
             <ChatMessages
+              key={sessionId}
               messages={[
                 ...sessionMessages,
                 ...(streamingMessages[sessionId ?? -1]
@@ -174,6 +141,7 @@ const App: React.FC = () => {
           </div>
           <div className="sticky bottom-0 w-full bg-gray-50 z-40 flex-shrink-0 px-4 pb-2">
             <ChatInput
+              key={sessionId}
               sessionId={sessionId}
               onSend={sendMessage}
               onStop={() => {}}
@@ -186,6 +154,40 @@ const App: React.FC = () => {
         Built with ❤️ using FastAPI, Ollama, and React
       </footer>
     </div>
+  );
+};
+
+const Header = () => {
+  return (
+    <header className="sticky top-0 z-50 bg-gray-50 shadow-sm">
+      <div className="mx-auto px-3 py-1 flex items-center justify-between">
+        {/* Logo and Brand */}
+        <div className="flex items-center gap-3">
+          <div className="bg-blue-200 text-white text-lg font-bold">
+            <img
+              src={ragBotLogo}
+              alt="RAG Doc Bot Logo"
+              className="h-10 w-auto"
+            />
+          </div>
+          <span className="text-l font-extrabold text-gay-600 tracking-wide drop-shadow-sm animate-pulse">
+            DragonAssist
+          </span>
+        </div>
+
+        {/* Right-side Navigation (Optional - Replace or Extend) */}
+        <div className="hidden md:flex items-center gap-6 text-sm text-gray-600">
+          <a
+            href="https://github.com/rahulbhatra/rag-doc-bot"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:text-blue-600 transition"
+          >
+            GitHub
+          </a>
+        </div>
+      </div>
+    </header>
   );
 };
 

@@ -1,7 +1,6 @@
 import os
 from pathlib import Path
 from typing import List
-from PyPDF2 import PdfReader
 from backend.ingestion.retrival import chunk_text
 from sentence_transformers import SentenceTransformer
 import chromadb
