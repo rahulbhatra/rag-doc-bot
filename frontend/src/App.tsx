@@ -126,6 +126,7 @@ const App: React.FC = () => {
         <div className="flex-1 flex flex-col overflow-hidden h-[calc(100vh-85px)] relative">
           <div className="flex-1 overflow-y-auto pb-4">
             <ChatMessages
+              key={sessionId}
               messages={[
                 ...sessionMessages,
                 ...(streamingMessages[sessionId ?? -1]
@@ -140,6 +141,7 @@ const App: React.FC = () => {
           </div>
           <div className="sticky bottom-0 w-full bg-gray-50 z-40 flex-shrink-0 px-4 pb-2">
             <ChatInput
+              key={sessionId}
               sessionId={sessionId}
               onSend={sendMessage}
               onStop={() => {}}
