@@ -36,7 +36,7 @@ async def add_message(session_id: int, msg: MessageCreate, db: AsyncSession = De
 
     db_session: Session = await db.get(Session, session_id)
     if not db_session.title:
-        strip_size = min(10, len(msg.text))
+        strip_size = min(20, len(msg.text))
         db_session.title = msg.text[:strip_size]
         db.add(db_session)
         await db.commit()

@@ -17,7 +17,9 @@ from contextlib import asynccontextmanager
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    # Startup logic
     await init_db()
+    yield
 
 app = FastAPI(lifespan=lifespan)
 
