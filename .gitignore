@@ -47,3 +47,5 @@ dist/
 # Mac system files
 .DS_Store
 *junit.xml
+
+*frontend/coverage
