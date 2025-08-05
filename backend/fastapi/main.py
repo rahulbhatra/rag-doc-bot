@@ -13,7 +13,13 @@ import json
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
-app = FastAPI(on_startup=[init_db])
+from contextlib import asynccontextmanager
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    await init_db()
+
+app = FastAPI(lifespan=lifespan)
 
 # CORS setup if frontend on a different port
 app.add_middleware(

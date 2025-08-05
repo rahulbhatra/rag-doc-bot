@@ -1,7 +1,4 @@
-# backend/utils/file_utils.py
-import os
-from typing import Union
-from PyPDF2 import PdfReader
+from pypdf import PdfReader
 from docx import Document
 
 

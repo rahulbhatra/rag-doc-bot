@@ -1,6 +1,6 @@
 from pathlib import Path
 from typing import List
-from PyPDF2 import PdfReader
+from pypdf import PdfReader
 import chromadb
 from sentence_transformers import SentenceTransformer
 
